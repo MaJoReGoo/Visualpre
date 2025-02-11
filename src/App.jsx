@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Inicio } from "./components/Inicio/Inicio";
-import { Parametrizacion } from "./components/Inicio/Parametrizacion";
+import  {Parametrizacion}  from "./components/Inicio/Parametrizacion";
 import { Visual2 } from "./components/Inicio/Visual2";
 
 function App() {

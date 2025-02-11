@@ -3,7 +3,6 @@ import Navbar from "./Navbar";
 import { Chart } from "primereact/chart";
 
 export function Inicio() {
-
   const [chartData, setChartData] = useState({});
   const [chartOptions, setChartOptions] = useState({});
 
@@ -67,59 +66,115 @@ export function Inicio() {
       ],
     };
 
+    const data4 = {
+      labels: ["Alpha", "Beta", "Gamma"],
+      datasets: [
+        {
+          data: [200, 100, 50],
+          backgroundColor: [
+            documentStyle.getPropertyValue("--pink-500"),
+            documentStyle.getPropertyValue("--indigo-500"),
+            documentStyle.getPropertyValue("--teal-500"),
+          ],
+          hoverBackgroundColor: [
+            documentStyle.getPropertyValue("--pink-400"),
+            documentStyle.getPropertyValue("--indigo-400"),
+            documentStyle.getPropertyValue("--teal-400"),
+          ],
+        },
+      ],
+    };
+
+    const data5 = {
+      labels: ["Delta", "Epsilon", "Zeta"],
+      datasets: [
+        {
+          data: [250, 150, 90],
+          backgroundColor: [
+            documentStyle.getPropertyValue("--yellow-500"),
+            documentStyle.getPropertyValue("--blue-600"),
+            documentStyle.getPropertyValue("--red-600"),
+          ],
+          hoverBackgroundColor: [
+            documentStyle.getPropertyValue("--yellow-400"),
+            documentStyle.getPropertyValue("--blue-400"),
+            documentStyle.getPropertyValue("--red-400"),
+          ],
+        },
+      ],
+    };
+
+    const data6 = {
+      labels: ["Lambda", "Mu", "Nu"],
+      datasets: [
+        {
+          data: [180, 200, 120],
+          backgroundColor: [
+            documentStyle.getPropertyValue("--teal-500"),
+            documentStyle.getPropertyValue("--green-600"),
+            documentStyle.getPropertyValue("--orange-600"),
+          ],
+          hoverBackgroundColor: [
+            documentStyle.getPropertyValue("--teal-400"),
+            documentStyle.getPropertyValue("--green-400"),
+            documentStyle.getPropertyValue("--orange-400"),
+          ],
+        },
+      ],
+    };
+
     const options = {
       cutout: "60%",
     };
 
-    setChartData([data1, data2, data3]);
+    setChartData([data1, data2, data3, data4, data5, data6]);
     setChartOptions(options);
   }, []);
 
   return (
-    <>
-    <div className="min-h-screen bg-gradient-to-br from-black via-purple-800 to-black opacity-95">
-    <Navbar />
-      <div className="min-h-screen flex items-center justify-center relative">
+    <div className="min-h-screen bg-gradient-to-br bg-black">
+      <Navbar />
+      <div className="container mx-auto p-6">
+        {/* Título de la primera sección */}
+        <div className="text-center mt-8 mb-12">
+          <h1 className="text-white text-3xl md:text-4xl font-semibold">Servidor 190</h1>
+        </div>
 
-        <h1 className="text-center text-white m-2 my-2">Servidor 190</h1>
-        <div className="flex justify-around w-full space-x-4 mt-8">
+        {/* Fila 1: Gráficas A, B, C */}
+        <div className="flex flex-wrap justify-center gap-8">
+          {['Gráfica A', 'Gráfica B', 'Gráfica C'].map((title, index) => (
+            <div key={index} className="text-center w-full sm:w-1/2 md:w-1/3 lg:w-1/4">
+              <h3 className="text-white mb-4 text-lg md:text-xl">{title}</h3>
+              <Chart
+                type="doughnut"
+                data={chartData[index]}
+                options={chartOptions}
+                className="w-full"
+              />
+            </div>
+          ))}
+        </div>
 
-          {/* Chart 1 */}
-          <div className="text-center">
-            
-            <h3 className="text-white mb-4">Gráfica A</h3>
-            <Chart
-              type="doughnut"
-              data={chartData[0]}
-              options={chartOptions}
-              className="w-full md:w-30rem"
-            />
-          </div>
+        {/* Título de la segunda sección */}
+        <div className="text-center mt-16 mb-12">
+          <h1 className="text-white text-3xl md:text-4xl font-semibold">Servidor 200</h1>
+        </div>
 
-          {/* Chart 2 */}
-          <div className="text-center">
-            <h3 className="text-white mb-4">Gráfica B</h3>
-            <Chart
-              type="doughnut"
-              data={chartData[1]}
-              options={chartOptions}
-              className="w-full md:w-30rem"
-            />
-          </div>
-
-          {/* Chart 3 */}
-          <div className="text-center">
-            <h3 className="text-white mb-4">Gráfica C</h3>
-            <Chart
-              type="doughnut"
-              data={chartData[2]}
-              options={chartOptions}
-              className="w-full md:w-30rem"
-            />
-          </div>
+        {/* Fila 2: Gráficas 200 */}
+        <div className="flex flex-wrap justify-center gap-8">
+          {['Gráfica 200 A', 'Gráfica 200 B', 'Gráfica 200 C'].map((title, index) => (
+            <div key={index} className="text-center w-full sm:w-1/2 md:w-1/3 lg:w-1/4">
+              <h3 className="text-white mb-4 text-lg md:text-xl">{title}</h3>
+              <Chart
+                type="doughnut"
+                data={chartData[index + 3]}
+                options={chartOptions}
+                className="w-full"
+              />
+            </div>
+          ))}
         </div>
       </div>
-      </div>
-    </>
+    </div>
   );
 }

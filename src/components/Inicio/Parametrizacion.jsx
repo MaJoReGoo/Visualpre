@@ -6,8 +6,32 @@ import { Button } from 'primereact/button';
 import { Tag } from 'primereact/tag';
 import Navbar from './Navbar';
 
+const mockCustomers = [
+    {
+        id: 1,
+        name: "John Doe",
+        country: { name: "USA" },
+        representative: { name: "Jane Smith" },
+        status: "qualified"
+    },
+    {
+        id: 2,
+        name: "Alice Johnson",
+        country: { name: "Canada" },
+        representative: { name: "Bob Brown" },
+        status: "new"
+    },
+    {
+        id: 3,
+        name: "Michael King",
+        country: { name: "Germany" },
+        representative: { name: "Lisa White" },
+        status: "unqualified"
+    },
+    // Add more customers as needed
+];
 
-export default function Parametrizacion() {
+export const Parametrizacion = () => {
     const [customers, setCustomers] = useState([]);
     const [selectedCustomers, setSelectedCustomers] = useState([]);
     const [filters, setFilters] = useState({
@@ -21,8 +45,8 @@ export default function Parametrizacion() {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Aquí puedes usar tus datos mock o la llamada a tu API
-        setCustomers(mockCustomers); // Simulate loading customer data
+        // Simulate loading customer data
+        setCustomers(mockCustomers);
         setLoading(false);
     }, []);
 
@@ -70,6 +94,14 @@ export default function Parametrizacion() {
     const statusBodyTemplate = (rowData) => (
         <Tag value={rowData.status} severity={getSeverity(rowData.status)} />
     );
+
+    const countryBodyTemplate = (rowData) => {
+        return rowData.country ? rowData.country.name : 'No country';
+    };
+
+    const representativeBodyTemplate = (rowData) => {
+        return rowData.representative ? rowData.representative.name : 'No representative';
+    };
 
     const getSeverity = (status) => {
         switch (status) {
@@ -135,4 +167,4 @@ export default function Parametrizacion() {
             </div>
         </>
     );
-}
+};
