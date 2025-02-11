@@ -132,7 +132,7 @@ export function Inicio() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br bg-black">
+    <div className="min-h-screen bg-gradient-to-br bg-black from-black to-blue-900 text-white">
       <Navbar />
       <div className="container mx-auto p-6">
         {/* Título de la primera sección */}

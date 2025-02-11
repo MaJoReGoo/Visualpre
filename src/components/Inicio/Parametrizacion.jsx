@@ -1,170 +1,197 @@
-import React, { useState, useEffect } from 'react';
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
-import { InputText } from 'primereact/inputtext';
-import { Button } from 'primereact/button';
-import { Tag } from 'primereact/tag';
-import Navbar from './Navbar';
+import React, { useState, useEffect } from "react";
+import { DataTable } from "primereact/datatable";
+import { Column } from "primereact/column";
+import { InputText } from "primereact/inputtext";
+import { Button } from "primereact/button";
+import Navbar from "./Navbar";
 
-const mockCustomers = [
-    {
-        id: 1,
-        name: "John Doe",
-        country: { name: "USA" },
-        representative: { name: "Jane Smith" },
-        status: "qualified"
-    },
-    {
-        id: 2,
-        name: "Alice Johnson",
-        country: { name: "Canada" },
-        representative: { name: "Bob Brown" },
-        status: "new"
-    },
-    {
-        id: 3,
-        name: "Michael King",
-        country: { name: "Germany" },
-        representative: { name: "Lisa White" },
-        status: "unqualified"
-    },
-    // Add more customers as needed
+const mockServers = [
+  {
+    id: 1,
+    name: "Servidor A",
+    ip: "192.168.1.1",
+    port: 8080,
+    measurementType: "Type 1",
+  },
+  {
+    id: 2,
+    name: "Servidor B",
+    ip: "192.168.1.2",
+    port: 8081,
+    measurementType: "Type 2",
+  },
+  {
+    id: 3,
+    name: "Servidor C",
+    ip: "192.168.1.3",
+    port: 8082,
+    measurementType: "Type 3",
+  },
+  // Add more servers as needed
 ];
 
 export const Parametrizacion = () => {
-    const [customers, setCustomers] = useState([]);
-    const [selectedCustomers, setSelectedCustomers] = useState([]);
-    const [filters, setFilters] = useState({
-        global: { value: null, matchMode: "contains" },
-        name: { value: null, matchMode: "startsWith" },
-        "country.name": { value: null, matchMode: "startsWith" },
-        representative: { value: null, matchMode: "in" },
-        status: { value: null, matchMode: "equals" },
-    });
-    const [globalFilterValue, setGlobalFilterValue] = useState("");
-    const [loading, setLoading] = useState(true);
+  const [servers, setServers] = useState([]);
+  const [selectedServers, setSelectedServers] = useState([]);
+  const [filters, setFilters] = useState({
+    global: { value: null, matchMode: "contains" },
+  });
+  const [globalFilterValue, setGlobalFilterValue] = useState("");
+  const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        // Simulate loading customer data
-        setCustomers(mockCustomers);
-        setLoading(false);
-    }, []);
+  useEffect(() => {
+    setServers(mockServers);
+    setLoading(false);
+  }, []);
 
-    const onGlobalFilterChange = (e) => {
-        const value = e.target.value;
-        let _filters = { ...filters };
-        _filters["global"].value = value;
-        setFilters(_filters);
-        setGlobalFilterValue(value);
-    };
+  const onGlobalFilterChange = (e) => {
+    const value = e.target.value;
+    let _filters = { ...filters };
+    _filters["global"].value = value;
+    setFilters(_filters);
+    setGlobalFilterValue(value);
+  };
 
-    const renderHeader = () => (
-        <div className="text-center mb-4 my-4">
-            <h1 className="text-white text-4xl font-bold">Bienvenido a parametrización</h1>
-            <div className="flex justify-center items-center mt-4">
-                <div className="flex justify-between items-center w-full max-w-6xl">
-                    <div className="flex gap-4">
-                        <div className="card bg-black p-2 rounded-lg w-48 hover:bg-zinc-900">
-                            <Button
-                                label="Agregar medición"
-                                className="p-button-sm w-full text-white"
-                            />
-                        </div>
-                        <div className="card bg-black p-2 rounded-lg w-48 hover:bg-zinc-900">
-                            <Button
-                                label="Agregar servidor"
-                                className="p-button-sm w-full text-white"
-                            />
-                        </div>
-                    </div>
-                    <div className="flex items-center gap-2 w-48">
-                        <InputText
-                            value={globalFilterValue}
-                            onChange={onGlobalFilterChange}
-                            placeholder="Buscar servidor"
-                            className="p-inputtext-sm p-shadow-2 rounded-lg w-full p-2"
-                            aria-label="Global search"
-                        />
-                    </div>
-                </div>
+  const renderHeader = () => (
+    <div className="text-center mb-4 my-4 text-white">
+      <h1 className="text-4xl font-bold">
+        Bienvenido a parametrización
+      </h1>
+      <div className="flex justify-center items-center mt-4">
+        <div className="flex justify-between items-center w-full max-w-6xl">
+          <div className="flex gap-4">
+            <div className="card bg-black p-2 rounded-lg w-48 hover:bg-zinc-800">
+              <Button
+                label="Agregar medición"
+                className="p-button-sm w-full text-white"
+              />
             </div>
+            <div className="card bg-black p-2 rounded-lg w-48 hover:bg-zinc-800">
+              <Button
+                label="Agregar servidor"
+                className="p-button-sm w-full text-white"
+              />
+            </div>
+          </div>
+          <div className="flex items-center gap-2 w-48">
+            <InputText
+              value={globalFilterValue}
+              onChange={onGlobalFilterChange}
+              placeholder="Buscar servidor"
+              className="p-inputtext-sm p-shadow-2 rounded-lg w-full p-2 text-white"
+              aria-label="Global search"
+            />
+          </div>
         </div>
-    );
+      </div>
+    </div>
+  );
 
-    const statusBodyTemplate = (rowData) => (
-        <Tag value={rowData.status} severity={getSeverity(rowData.status)} />
-    );
-
-    const countryBodyTemplate = (rowData) => {
-        return rowData.country ? rowData.country.name : 'No country';
-    };
-
-    const representativeBodyTemplate = (rowData) => {
-        return rowData.representative ? rowData.representative.name : 'No representative';
-    };
-
-    const getSeverity = (status) => {
-        switch (status) {
-            case "unqualified":
-                return "danger";
-            case "qualified":
-                return "success";
-            case "new":
-                return "info";
-            case "negotiation":
-                return "warning";
-            case "renewal":
-                return null;
-            default:
-                return null;
-        }
-    };
-
-    const renderCheckboxList = () => {
-        return (
-            <div className="my-4">
-                {selectedCustomers.length > 0 && (
-                    <Button
-                        label="Guardar cambios"
-                        className="p-button-lg w-full mt-4"
-                        onClick={() => alert('Cambios guardados!')}
-                    />
-                )}
-            </div>
-        );
-    };
-
+  const renderCheckboxList = () => {
     return (
-        <>
-            <div className="min-h-screen bg-gradient-to-br from-black via-purple-800 to-black opacity-95">
-                <Navbar />
-                <div className="card mt-28 mx-auto max-w-7xl shadow-xl p-6 rounded-lg bg-transparent">
-                    <DataTable
-                        value={customers}
-                        paginator
-                        rows={10}
-                        dataKey="id"
-                        selectionMode="checkbox"
-                        selection={selectedCustomers}
-                        onSelectionChange={(e) => setSelectedCustomers(e.value)}
-                        filters={filters}
-                        filterDisplay="row"
-                        globalFilterFields={["name", "country.name", "representative.name", "status"]}
-                        loading={loading}
-                        header={renderHeader()}
-                        emptyMessage="No customers found."
-                        responsiveLayout="scroll"
-                        className="p-datatable-sm"
-                    >
-                        <Column selectionMode="multiple" headerStyle={{ width: '3rem' }}></Column>
-                        <Column field="name" header="Name" filter filterPlaceholder="Search by name" style={{ minWidth: "12rem" }} />
-                        <Column header="Country" filterField="country.name" body={countryBodyTemplate} filter filterPlaceholder="Search by country" style={{ minWidth: "12rem" }} />
-                        <Column header="Representative" filterField="representative" body={representativeBodyTemplate} filter filterPlaceholder="Search by representative" style={{ minWidth: "14rem" }} />
-                        <Column field="status" header="Status" body={statusBodyTemplate} filter style={{ minWidth: "12rem" }} />
-                    </DataTable>
-                    {renderCheckboxList()}
-                </div>
-            </div>
-        </>
+      <div
+        className={`bg-black rounded-lg shadow-lg w-48 hover:bg-zinc-800 p-4 flex justify-center items-center mx-auto mt-6 ${selectedServers.length === 0 ? 'hidden' : ''}`}
+      >
+        <Button
+          label="Guardar cambios"
+          className="p-button-lg w-full text-white"
+          onClick={() => alert("Cambios guardados!")}
+        />
+      </div>
     );
+  };
+
+  const onCheckboxChange = (e, server) => {
+    const selected = [...selectedServers];
+    if (e.target.checked) {
+      selected.push(server);
+    } else {
+      const index = selected.findIndex((s) => s.id === server.id);
+      selected.splice(index, 1);
+    }
+    setSelectedServers(selected);
+  };
+
+  const onSelectAllChange = (e) => {
+    if (e.target.checked) {
+      setSelectedServers(servers);
+    } else {
+      setSelectedServers([]);
+    }
+  };
+
+  return (
+    <>
+      <div className="min-h-screen bg-gradient-to-br bg-black from-black to-blue-900 text-white">
+        <Navbar />
+        <div className="card mt-28 mx-auto max-w-7xl shadow-xl p-6 rounded-lg bg-transparent">
+          <DataTable
+            value={servers}
+            paginator
+            rows={10}
+            dataKey="id"
+            filters={filters}
+            filterDisplay="row"
+            globalFilterFields={["name", "ip", "port", "measurementType"]}
+            loading={loading}
+            header={renderHeader()}
+            emptyMessage="No servers found."
+            responsiveLayout="scroll"
+            className="text-white"
+          >
+            {/* Checkbox para seleccionar/desmarcar todos */}
+            <Column
+              header={
+                <input
+                  type="checkbox"
+                  onChange={onSelectAllChange}
+                  checked={selectedServers.length === servers.length}
+                  className="rounded-lg"
+                />
+              }
+              body={(rowData) => (
+                <input
+                  type="checkbox"
+                  checked={selectedServers.some((server) => server.id === rowData.id)}
+                  onChange={(e) => onCheckboxChange(e, rowData)}
+                  className="rounded-lg"
+                />
+              )}
+              style={{ width: "3rem" }}
+            />
+
+            {/* Nombre del Servidor */}
+            <Column
+              field="name"
+              header="Nombre del servidor"
+              style={{ minWidth: "12rem" }}
+            />
+            
+            {/* IP Servidor */}
+            <Column
+              field="ip"
+              header="IP Servidor"
+              style={{ minWidth: "12rem" }}
+            />
+
+            {/* Puerto Servidor */}
+            <Column
+              field="port"
+              header="Puerto Servidor"
+              style={{ minWidth: "10rem" }}
+            />
+
+            {/* Tipo de medición */}
+            <Column
+              field="measurementType"
+              header="Tipo de medición"
+              style={{ minWidth: "12rem" }}
+            />
+          </DataTable>
+
+          {renderCheckboxList()}
+        </div>
+      </div>
+    </>
+  );
 };
