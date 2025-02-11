@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "./Navbar";
 import { Chart } from "primereact/chart";
+import { useNavigate } from "react-router-dom";  // Importa useNavigate
 
 export function Inicio() {
   const [chartData, setChartData] = useState({});
   const [chartOptions, setChartOptions] = useState({});
+  
+  const navigate = useNavigate();  // Inicializa useNavigate
 
   useEffect(() => {
     const documentStyle = getComputedStyle(document.documentElement);
@@ -131,6 +134,11 @@ export function Inicio() {
     setChartOptions(options);
   }, []);
 
+  // Función para redirigir al usuario cuando haga clic en el botón
+  const redirectToAddCharts = () => {
+    navigate("/Parametrizacion");  // Redirecciona usando navigate
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br bg-black from-black to-blue-900 text-white">
       <Navbar />
@@ -173,6 +181,16 @@ export function Inicio() {
               />
             </div>
           ))}
+        </div>
+
+        {/* Botón "Agregar más gráficas" en el costado derecho */}
+        <div className="fixed bottom-8 right-8">
+          <button
+            onClick={redirectToAddCharts}
+            className="bg-blue-500 text-white p-4 rounded-full shadow-lg hover:bg-blue-600 transition-colors"
+          >
+            Agregar más gráficas
+          </button>
         </div>
       </div>
     </div>

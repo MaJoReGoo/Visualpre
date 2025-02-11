@@ -3,6 +3,7 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
+import { FaEdit } from "react-icons/fa";  // Usamos Font Awesome para el ícono de lápiz
 import Navbar from "./Navbar";
 
 const mockServers = [
@@ -27,7 +28,6 @@ const mockServers = [
     port: 8082,
     measurementType: "Type 3",
   },
-  // Add more servers as needed
 ];
 
 export const Parametrizacion = () => {
@@ -120,6 +120,12 @@ export const Parametrizacion = () => {
     }
   };
 
+  // Función para manejar el clic en el ícono de editar
+  const onEditServer = (server) => {
+    // Aquí podrías abrir un modal de edición o redirigir a una página de edición
+    alert(`Editando servidor: ${server.name}`);
+  };
+
   return (
     <>
       <div className="min-h-screen bg-gradient-to-br bg-black from-black to-blue-900 text-white">
@@ -186,6 +192,19 @@ export const Parametrizacion = () => {
               field="measurementType"
               header="Tipo de medición"
               style={{ minWidth: "12rem" }}
+            />
+
+            {/* Columna de Edición */}
+            <Column
+              header="Editar"
+              body={(rowData) => (
+                <Button
+                  icon={<FaEdit className="text-white" />}
+                  onClick={() => onEditServer(rowData)}
+                  className="p-button-rounded p-button-sm text-white"
+                />
+              )}
+              style={{ width: "5rem" }}
             />
           </DataTable>
 
