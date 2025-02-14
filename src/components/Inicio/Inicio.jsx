@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "./Navbar";
 import { Chart } from "primereact/chart";
-import { useNavigate } from "react-router-dom";  // Importa useNavigate
+import { useNavigate } from "react-router-dom"; // Importa useNavigate
 
 export function Inicio() {
   const [chartData, setChartData] = useState({});
   const [chartOptions, setChartOptions] = useState({});
-  
-  const navigate = useNavigate();  // Inicializa useNavigate
+  console.log(import.meta.env.MODE);
+
+  const navigate = useNavigate(); // Inicializa useNavigate
 
   useEffect(() => {
     const documentStyle = getComputedStyle(document.documentElement);
@@ -136,7 +137,7 @@ export function Inicio() {
 
   // Función para redirigir al usuario cuando haga clic en el botón
   const redirectToAddCharts = () => {
-    navigate("/Parametrizacion");  // Redirecciona usando navigate
+    navigate("/Parametrizacion"); // Redirecciona usando navigate
   };
 
   return (
@@ -145,13 +146,18 @@ export function Inicio() {
       <div className="container mx-auto p-6">
         {/* Título de la primera sección */}
         <div className="text-center mt-8 mb-12">
-          <h1 className="text-white text-3xl md:text-4xl font-semibold">Servidor 190</h1>
+          <h1 className="text-white text-3xl md:text-4xl font-semibold">
+            Servidor 190
+          </h1>
         </div>
 
         {/* Fila 1: Gráficas A, B, C */}
         <div className="flex flex-wrap justify-center gap-8">
-          {['Gráfica A', 'Gráfica B', 'Gráfica C'].map((title, index) => (
-            <div key={index} className="text-center w-full sm:w-1/2 md:w-1/3 lg:w-1/4">
+          {["Gráfica A", "Gráfica B", "Gráfica C"].map((title, index) => (
+            <div
+              key={index}
+              className="text-center w-full sm:w-1/2 md:w-1/3 lg:w-1/4"
+            >
               <h3 className="text-white mb-4 text-lg md:text-xl">{title}</h3>
               <Chart
                 type="doughnut"
@@ -165,22 +171,29 @@ export function Inicio() {
 
         {/* Título de la segunda sección */}
         <div className="text-center mt-16 mb-12">
-          <h1 className="text-white text-3xl md:text-4xl font-semibold">Servidor 200</h1>
+          <h1 className="text-white text-3xl md:text-4xl font-semibold">
+            Servidor 200
+          </h1>
         </div>
 
         {/* Fila 2: Gráficas 200 */}
         <div className="flex flex-wrap justify-center gap-8">
-          {['Gráfica 200 A', 'Gráfica 200 B', 'Gráfica 200 C'].map((title, index) => (
-            <div key={index} className="text-center w-full sm:w-1/2 md:w-1/3 lg:w-1/4">
-              <h3 className="text-white mb-4 text-lg md:text-xl">{title}</h3>
-              <Chart
-                type="doughnut"
-                data={chartData[index + 3]}
-                options={chartOptions}
-                className="w-full"
-              />
-            </div>
-          ))}
+          {["Gráfica 200 A", "Gráfica 200 B", "Gráfica 200 C"].map(
+            (title, index) => (
+              <div
+                key={index}
+                className="text-center w-full sm:w-1/2 md:w-1/3 lg:w-1/4"
+              >
+                <h3 className="text-white mb-4 text-lg md:text-xl">{title}</h3>
+                <Chart
+                  type="doughnut"
+                  data={chartData[index + 3]}
+                  options={chartOptions}
+                  className="w-full"
+                />
+              </div>
+            )
+          )}
         </div>
 
         {/* Botón "Agregar más gráficas" en el costado derecho */}

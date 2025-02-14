@@ -67,11 +67,10 @@ export default function Navbar() {
   }));
 
   return (
-    < >
+    <>
       {/* Contenedor del Menubar con posición fija */}
-      
-        <Menubar model={model} start={start} end={end} className="text-white" />
-      
+
+      <Menubar model={model} start={start} end={end} className="text-white" />
     </>
   );
 }
