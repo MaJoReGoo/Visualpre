@@ -9,7 +9,7 @@ import axios from "axios"; // Importamos axios
 
 export const Parametrizacion = () => {
   const [visuals, setVisuals] = useState([]); // Aquí cambiamos de servers a visuals
-  const [selectedVisuals, setSelectedVisuals] = useState([]);
+  const [selectedVisuals, setSelectedVisuals] = useState([]); // Mantenemos los seleccionados
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: "contains" },
   });
@@ -44,6 +44,7 @@ export const Parametrizacion = () => {
           serverName: visual.serverName,
           serverIp: visual.serverIp,
           serverPort: visual.serverPort,
+          id: visual.id, // Aseguramos que cada servidor tenga su id único
         }));
 
         setVisuals(filteredData); // Guardamos solo los datos necesarios
@@ -116,21 +117,30 @@ export const Parametrizacion = () => {
 
   const onCheckboxChange = (e, visual) => {
     const selected = [...selectedVisuals];
+    // Verificar si el visual está seleccionado
     if (e.target.checked) {
       selected.push(visual);
     } else {
+      // Eliminar de la lista de seleccionados
       const index = selected.findIndex((s) => s.id === visual.id);
-      selected.splice(index, 1);
+      if (index !== -1) {
+        selected.splice(index, 1);
+      }
     }
-    setSelectedVisuals(selected);
+    setSelectedVisuals(selected); // Actualizamos el estado con los visuales seleccionados
   };
 
   const onSelectAllChange = (e) => {
     if (e.target.checked) {
-      setSelectedVisuals(visuals);
+      setSelectedVisuals(visuals); // Seleccionamos todos los visuals
     } else {
-      setSelectedVisuals([]);
+      setSelectedVisuals([]); // Deseleccionamos todos
     }
+  };
+
+  const isSelected = (visual) => {
+    // Verificar si un visual está seleccionado
+    return selectedVisuals.some((selected) => selected.id === visual.id);
   };
 
   const onEditVisual = (visual) => {
@@ -142,16 +152,16 @@ export const Parametrizacion = () => {
       <Navbar />
       <div className="card mt-28 mx-auto max-w-7xl shadow-xl p-6 rounded-lg bg-transparent">
         <DataTable
-          value={visuals} // Aquí cambiamos de "servers" a "visuals"
+          value={visuals}
           paginator
           rows={10}
           dataKey="id"
           filters={filters}
           filterDisplay="row"
-          globalFilterFields={["serverName", "serverIp", "serverPort"]} // Filtramos por los campos correctos
+          globalFilterFields={["serverName", "serverIp", "serverPort"]}
           loading={loading}
           header={renderHeader()}
-          emptyMessage="No visuals found." // Cambié el mensaje a "No visuals found."
+          emptyMessage="No visuals found."
           responsiveLayout="scroll"
           className="text-white"
         >
@@ -160,16 +170,14 @@ export const Parametrizacion = () => {
               <input
                 type="checkbox"
                 onChange={onSelectAllChange}
-                checked={selectedVisuals.length === visuals.length} // Comparamos con "visuals"
+                checked={selectedVisuals.length === visuals.length}
                 className="rounded-lg"
               />
             }
             body={(rowData) => (
               <input
                 type="checkbox"
-                checked={selectedVisuals.some(
-                  (visual) => visual.id === rowData.id
-                )}
+                checked={isSelected(rowData)}
                 onChange={(e) => onCheckboxChange(e, rowData)}
                 className="rounded-lg"
               />
