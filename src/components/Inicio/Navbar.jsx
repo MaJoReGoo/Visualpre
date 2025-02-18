@@ -13,7 +13,7 @@ export default function Navbar() {
       label: "Visuales",
       icon: "pi pi-home",
       className: "text-white m-2",
-      to: "/", // Ruta de navegación
+      to: "/Inicio", // Ruta de navegación
     },
     {
       label: "Parametrización",

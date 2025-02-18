@@ -3,67 +3,131 @@ import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { InputText } from "primereact/inputtext";
 import { Button } from "primereact/button";
-import { FaEdit } from "react-icons/fa"; // Usamos Font Awesome para el ícono de lápiz
+import { FaEdit } from "react-icons/fa";
 import Navbar from "./Navbar";
-import axios from "axios"; // Importamos axios
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export const Parametrizacion = () => {
-  const [visuals, setVisuals] = useState([]); // Aquí cambiamos de servers a visuals
-  const [selectedVisuals, setSelectedVisuals] = useState([]); // Mantenemos los seleccionados
+  const [visuals, setVisuals] = useState([]);
+  const [selectedVisuals, setSelectedVisuals] = useState([]);
   const [filters, setFilters] = useState({
     global: { value: null, matchMode: "contains" },
   });
   const [globalFilterValue, setGlobalFilterValue] = useState("");
   const [loading, setLoading] = useState(true);
+  const [measurementTypes, setMeasurementTypes] = useState([]);
+  const [editingVisual, setEditingVisual] = useState(null);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
-    // Hacemos la solicitud HTTP para obtener los datos de "visuals" usando la variable de entorno
-    const fetchVisuals = async () => {
+    const fetchVisualsAndMeasurementTypes = async () => {
       try {
-        // Recuperar el token de autenticación del localStorage
         const token = localStorage.getItem("authToken");
-
-        // Si no hay token, puedes redirigir al usuario a la página de login o manejarlo como un error
         if (!token) {
           alert("No estás autenticado. Por favor, inicia sesión.");
           return;
         }
 
-        // Hacer la solicitud a la API con el token en los encabezados
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/visuals`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`, // Agregar el token en el encabezado
-            },
-          }
-        );
+        const [visualsResponse, measurementTypesResponse] = await Promise.all([
+          axios.get(`${import.meta.env.VITE_API_URL}/visuals`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          axios.get(`${import.meta.env.VITE_API_URL}/measurement-types`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+        ]);
 
-        // Solo seleccionamos los campos necesarios de la respuesta
-        const filteredData = response.data.map((visual) => ({
-          serverName: visual.serverName,
-          serverIp: visual.serverIp,
-          serverPort: visual.serverPort,
-          id: visual.id, // Aseguramos que cada servidor tenga su id único
-        }));
+        setMeasurementTypes(measurementTypesResponse.data);
 
-        setVisuals(filteredData); // Guardamos solo los datos necesarios
-        setLoading(false); // Dejamos de cargar cuando se recibe la respuesta
+        const filteredData = visualsResponse.data.map((visual) => {
+          const measurementTypeNames = visual.measurementVisuals.map(
+            (measurementVisual) => measurementVisual.measurementType.name
+          );
+
+          return {
+            serverName: visual.serverName,
+            serverIp: visual.serverIp,
+            serverPort: visual.serverPort,
+            measurementTypes: measurementTypeNames.join(", "),
+            measurementTypeIds: visual.measurementVisuals.map(
+              (measurementVisual) => measurementVisual.measurementType.id
+            ),
+            id: visual.id,
+          };
+        });
+
+        setVisuals(filteredData);
+
+        // Cargar los visuales seleccionados desde el localStorage (si ya hubo cambios previos)
+        const savedSelectedVisuals = JSON.parse(localStorage.getItem("selectedVisuals")) || [];
+        setSelectedVisuals(savedSelectedVisuals);
+
+        setLoading(false);
       } catch (error) {
-        console.error("Error al obtener los visuals", error);
-        setLoading(false); // Dejamos de cargar aunque haya un error
+        console.error("Error al obtener los visuals o measurementTypes", error);
+        setLoading(false);
       }
     };
 
-    fetchVisuals();
-  }, []); // La dependencia es vacía porque solo queremos que se ejecute una vez cuando el componente se monte
+    fetchVisualsAndMeasurementTypes();
+  }, []);
 
+  // Manejar el filtro global de búsqueda
   const onGlobalFilterChange = (e) => {
     const value = e.target.value;
     let _filters = { ...filters };
     _filters["global"].value = value;
     setFilters(_filters);
     setGlobalFilterValue(value);
+  };
+
+  // Manejar la selección/desmarcado de un checkbox
+  const onCheckboxChange = (e, visual) => {
+    const selected = [...selectedVisuals];
+    if (e.target.checked) {
+      selected.push(visual); // Agregar a la lista de seleccionados
+    } else {
+      const index = selected.findIndex((s) => s.id === visual.id);
+      if (index !== -1) {
+        selected.splice(index, 1); // Eliminar de la lista de seleccionados
+      }
+    }
+    setSelectedVisuals(selected); // Actualizar el estado con la lista seleccionada
+  };
+
+  // Manejar el "Seleccionar todos"
+  const onSelectAllChange = (e) => {
+    if (e.target.checked) {
+      setSelectedVisuals(visuals); // Seleccionar todos
+    } else {
+      setSelectedVisuals([]); // Desmarcar todos
+    }
+  };
+
+  // Guardar los cambios en localStorage
+  const saveChanges = () => {
+    localStorage.setItem("selectedVisuals", JSON.stringify(selectedVisuals));
+    alert("Cambios guardados!");
+  };
+
+  // Verificar si un visual está seleccionado
+  const isSelected = (visual) => {
+    return selectedVisuals.some((selected) => selected.id === visual.id);
+  };
+
+  // Mostrar el botón de "Guardar cambios" si hay al menos un cambio
+  const renderCheckboxList = () => {
+    return (
+      <div className={`bg-black rounded-lg shadow-lg w-48 hover:bg-zinc-800 p-4 flex justify-center items-center mx-auto mt-6 ${selectedVisuals.length === 0 ? "" : "block"}`}>
+        <Button
+          label="Guardar cambios"
+          className="p-button-lg w-full text-white"
+          onClick={saveChanges}
+        />
+      </div>
+    );
   };
 
   const renderHeader = () => (
@@ -76,12 +140,14 @@ export const Parametrizacion = () => {
               <Button
                 label="Agregar medición"
                 className="p-button-sm w-full text-white"
+                onClick={() => navigate('/AgregarMedicion')}
               />
             </div>
             <div className="card bg-black p-2 rounded-lg w-48 hover:bg-zinc-800">
               <Button
                 label="Agregar servidor"
                 className="p-button-sm w-full text-white"
+                onClick={() => navigate('/AgregarServidor')}
               />
             </div>
           </div>
@@ -90,7 +156,7 @@ export const Parametrizacion = () => {
               value={globalFilterValue}
               onChange={onGlobalFilterChange}
               placeholder="Buscar visual"
-              className="p-inputtext-sm p-shadow-2 rounded-lg w-full p-2 text-white"
+              className="p-inputtext-sm p-shadow-2 rounded-lg w-full p-2 text-black"
               aria-label="Global search"
             />
           </div>
@@ -98,54 +164,6 @@ export const Parametrizacion = () => {
       </div>
     </div>
   );
-
-  const renderCheckboxList = () => {
-    return (
-      <div
-        className={`bg-black rounded-lg shadow-lg w-48 hover:bg-zinc-800 p-4 flex justify-center items-center mx-auto mt-6 ${
-          selectedVisuals.length === 0 ? "hidden" : ""
-        }`}
-      >
-        <Button
-          label="Guardar cambios"
-          className="p-button-lg w-full text-white"
-          onClick={() => alert("Cambios guardados!")}
-        />
-      </div>
-    );
-  };
-
-  const onCheckboxChange = (e, visual) => {
-    const selected = [...selectedVisuals];
-    // Verificar si el visual está seleccionado
-    if (e.target.checked) {
-      selected.push(visual);
-    } else {
-      // Eliminar de la lista de seleccionados
-      const index = selected.findIndex((s) => s.id === visual.id);
-      if (index !== -1) {
-        selected.splice(index, 1);
-      }
-    }
-    setSelectedVisuals(selected); // Actualizamos el estado con los visuales seleccionados
-  };
-
-  const onSelectAllChange = (e) => {
-    if (e.target.checked) {
-      setSelectedVisuals(visuals); // Seleccionamos todos los visuals
-    } else {
-      setSelectedVisuals([]); // Deseleccionamos todos
-    }
-  };
-
-  const isSelected = (visual) => {
-    // Verificar si un visual está seleccionado
-    return selectedVisuals.some((selected) => selected.id === visual.id);
-  };
-
-  const onEditVisual = (visual) => {
-    alert(`Editando visual: ${visual.serverName}`);
-  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br bg-black from-black to-blue-900 text-white">
@@ -166,14 +184,7 @@ export const Parametrizacion = () => {
           className="text-white"
         >
           <Column
-            header={
-              <input
-                type="checkbox"
-                onChange={onSelectAllChange}
-                checked={selectedVisuals.length === visuals.length}
-                className="rounded-lg"
-              />
-            }
+            header={<input type="checkbox" onChange={onSelectAllChange} checked={selectedVisuals.length === visuals.length} className="rounded-lg" />}
             body={(rowData) => (
               <input
                 type="checkbox"
@@ -184,17 +195,10 @@ export const Parametrizacion = () => {
             )}
             style={{ width: "3rem" }}
           />
-          <Column
-            field="serverName"
-            header="Nombre del visual"
-            style={{ minWidth: "12rem" }}
-          />
+          <Column field="serverName" header="Nombre del visual" style={{ minWidth: "12rem" }} />
           <Column field="serverIp" header="IP Visual" style={{ minWidth: "12rem" }} />
-          <Column
-            field="serverPort"
-            header="Puerto Visual"
-            style={{ minWidth: "10rem" }}
-          />
+          <Column field="serverPort" header="Puerto Visual" style={{ minWidth: "10rem" }} />
+          <Column field="measurementTypes" header="Tipos de medición" style={{ minWidth: "12rem" }} />
           <Column
             header="Editar"
             body={(rowData) => (

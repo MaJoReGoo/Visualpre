@@ -1,144 +1,85 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "./Navbar";
 import { Chart } from "primereact/chart";
-import { useNavigate } from "react-router-dom"; // Importa useNavigate
+import { useNavigate } from "react-router-dom";
 
 export function Inicio() {
-  const [chartData, setChartData] = useState({});
+  const [selectedVisuals, setSelectedVisuals] = useState([]);
+  const [chartData, setChartData] = useState([]);
   const [chartOptions, setChartOptions] = useState({});
-  console.log(import.meta.env.MODE);
+  const [transitioning, setTransitioning] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const navigate = useNavigate();
 
-  const navigate = useNavigate(); // Inicializa useNavigate
-
+  // Recuperamos los servidores seleccionados desde el localStorage
   useEffect(() => {
-    const documentStyle = getComputedStyle(document.documentElement);
-
-    const data1 = {
-      labels: ["A", "B", "C"],
-      datasets: [
-        {
-          data: [300, 50, 100],
-          backgroundColor: [
-            documentStyle.getPropertyValue("--blue-500"),
-            documentStyle.getPropertyValue("--yellow-500"),
-            documentStyle.getPropertyValue("--green-500"),
-          ],
-          hoverBackgroundColor: [
-            documentStyle.getPropertyValue("--blue-400"),
-            documentStyle.getPropertyValue("--yellow-400"),
-            documentStyle.getPropertyValue("--green-400"),
-          ],
-        },
-      ],
-    };
-
-    const data2 = {
-      labels: ["X", "Y", "Z"],
-      datasets: [
-        {
-          data: [200, 120, 80],
-          backgroundColor: [
-            documentStyle.getPropertyValue("--red-500"),
-            documentStyle.getPropertyValue("--blue-500"),
-            documentStyle.getPropertyValue("--orange-500"),
-          ],
-          hoverBackgroundColor: [
-            documentStyle.getPropertyValue("--red-400"),
-            documentStyle.getPropertyValue("--blue-400"),
-            documentStyle.getPropertyValue("--orange-400"),
-          ],
-        },
-      ],
-    };
-
-    const data3 = {
-      labels: ["One", "Two", "Three"],
-      datasets: [
-        {
-          data: [400, 150, 50],
-          backgroundColor: [
-            documentStyle.getPropertyValue("--green-500"),
-            documentStyle.getPropertyValue("--purple-500"),
-            documentStyle.getPropertyValue("--pink-500"),
-          ],
-          hoverBackgroundColor: [
-            documentStyle.getPropertyValue("--green-400"),
-            documentStyle.getPropertyValue("--purple-400"),
-            documentStyle.getPropertyValue("--pink-400"),
-          ],
-        },
-      ],
-    };
-
-    const data4 = {
-      labels: ["Alpha", "Beta", "Gamma"],
-      datasets: [
-        {
-          data: [200, 100, 50],
-          backgroundColor: [
-            documentStyle.getPropertyValue("--pink-500"),
-            documentStyle.getPropertyValue("--indigo-500"),
-            documentStyle.getPropertyValue("--teal-500"),
-          ],
-          hoverBackgroundColor: [
-            documentStyle.getPropertyValue("--pink-400"),
-            documentStyle.getPropertyValue("--indigo-400"),
-            documentStyle.getPropertyValue("--teal-400"),
-          ],
-        },
-      ],
-    };
-
-    const data5 = {
-      labels: ["Delta", "Epsilon", "Zeta"],
-      datasets: [
-        {
-          data: [250, 150, 90],
-          backgroundColor: [
-            documentStyle.getPropertyValue("--yellow-500"),
-            documentStyle.getPropertyValue("--blue-600"),
-            documentStyle.getPropertyValue("--red-600"),
-          ],
-          hoverBackgroundColor: [
-            documentStyle.getPropertyValue("--yellow-400"),
-            documentStyle.getPropertyValue("--blue-400"),
-            documentStyle.getPropertyValue("--red-400"),
-          ],
-        },
-      ],
-    };
-
-    const data6 = {
-      labels: ["Lambda", "Mu", "Nu"],
-      datasets: [
-        {
-          data: [180, 200, 120],
-          backgroundColor: [
-            documentStyle.getPropertyValue("--teal-500"),
-            documentStyle.getPropertyValue("--green-600"),
-            documentStyle.getPropertyValue("--orange-600"),
-          ],
-          hoverBackgroundColor: [
-            documentStyle.getPropertyValue("--teal-400"),
-            documentStyle.getPropertyValue("--green-400"),
-            documentStyle.getPropertyValue("--orange-400"),
-          ],
-        },
-      ],
-    };
-
-    const options = {
-      cutout: "60%",
-    };
-
-    setChartData([data1, data2, data3, data4, data5, data6]);
-    setChartOptions(options);
+    const savedSelectedVisuals = localStorage.getItem("selectedVisuals");
+    if (savedSelectedVisuals) {
+      setSelectedVisuals(JSON.parse(savedSelectedVisuals));
+    }
   }, []);
 
-  // Función para redirigir al usuario cuando haga clic en el botón
-  const redirectToAddCharts = () => {
-    navigate("/Parametrizacion"); // Redirecciona usando navigate
+  // Función para obtener los datos de las gráficas según el servidor
+  const fetchChartData = async () => {
+    if (selectedVisuals.length === 0) return;
+
+    try {
+      // Simula la obtención de datos basados en el servidor (visual)
+      const fetchedData = selectedVisuals.map((visual) => {
+        return {
+          labels: ["A", "B", "C"],
+          datasets: [
+            {
+              data: [Math.random() * 500, Math.random() * 100, Math.random() * 200],
+              backgroundColor: ["#42A5F5", "#66BB6A", "#FF9800"],
+              hoverBackgroundColor: ["#1E88E5", "#81C784", "#FFA000"],
+            },
+          ],
+        };
+      });
+
+      setChartData(fetchedData);
+      setChartOptions({
+        cutout: "60%",
+      });
+    } catch (error) {
+      console.error("Error al obtener los datos de las gráficas:", error);
+    }
   };
+
+  useEffect(() => {
+    fetchChartData();
+  }, [selectedVisuals]); // Se vuelve a ejecutar cada vez que cambian los servidores seleccionados
+
+  const renderCharts = () => {
+    if (selectedVisuals.length === 0) {
+      return <div className="text-center text-white">No hay servidores seleccionados para la vista.</div>;
+    }
+
+    return selectedVisuals.map((visual, index) => (
+      <div key={index} className="text-center w-full sm:w-1/2 md:w-1/3 lg:w-1/4">
+        <h3 className="text-white mb-4 text-lg md:text-xl">{`Gráfica del servidor ${visual.serverName}`}</h3>
+        <Chart
+          type="doughnut"
+          data={chartData[index]}
+          options={chartOptions}
+          className={`w-full transition-opacity duration-500 ${transitioning ? "opacity-0" : "opacity-100"}`}
+        />
+      </div>
+    ));
+  };
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setTransitioning(true);
+      setTimeout(() => {
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % selectedVisuals.length);
+        setTransitioning(false);
+      }, 500);
+    }, 5000);
+
+    return () => clearInterval(intervalId);
+  }, [selectedVisuals]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br bg-black from-black to-blue-900 text-white">
@@ -147,59 +88,35 @@ export function Inicio() {
         {/* Título de la primera sección */}
         <div className="text-center mt-8 mb-12">
           <h1 className="text-white text-3xl md:text-4xl font-semibold">
-            Servidor 190
+            Servidor {selectedVisuals[currentIndex]?.serverName || "Desconocido"}
           </h1>
         </div>
 
-        {/* Fila 1: Gráficas A, B, C */}
-        <div className="flex flex-wrap justify-center gap-8">
-          {["Gráfica A", "Gráfica B", "Gráfica C"].map((title, index) => (
-            <div
-              key={index}
-              className="text-center w-full sm:w-1/2 md:w-1/3 lg:w-1/4"
-            >
-              <h3 className="text-white mb-4 text-lg md:text-xl">{title}</h3>
-              <Chart
-                type="doughnut"
-                data={chartData[index]}
-                options={chartOptions}
-                className="w-full"
-              />
-            </div>
-          ))}
+        {/* Carrusel de Gráficas */}
+        <div className="flex flex-wrap justify-center gap-8 transition-all duration-500 ease-in-out opacity-100">
+          {renderCharts()}
         </div>
 
-        {/* Título de la segunda sección */}
-        <div className="text-center mt-16 mb-12">
-          <h1 className="text-white text-3xl md:text-4xl font-semibold">
-            Servidor 200
-          </h1>
+        {/* Controles de navegación manual con flechas */}
+        <div className="flex justify-center items-center gap-4 mt-6">
+          <button
+            onClick={() => setCurrentIndex((prevIndex) => (prevIndex - 1 + selectedVisuals.length) % selectedVisuals.length)}
+            className="bg-transparent text-white p-4 rounded-full shadow-lg hover:bg-blue-600 transition-colors text-2xl"
+          >
+            &#8592; {/* Flecha hacia la izquierda */}
+          </button>
+          <button
+            onClick={() => setCurrentIndex((prevIndex) => (prevIndex + 1) % selectedVisuals.length)}
+            className="bg-transparent text-white p-4 rounded-full shadow-lg hover:bg-blue-600 transition-colors text-2xl"
+          >
+            &#8594; {/* Flecha hacia la derecha */}
+          </button>
         </div>
 
-        {/* Fila 2: Gráficas 200 */}
-        <div className="flex flex-wrap justify-center gap-8">
-          {["Gráfica 200 A", "Gráfica 200 B", "Gráfica 200 C"].map(
-            (title, index) => (
-              <div
-                key={index}
-                className="text-center w-full sm:w-1/2 md:w-1/3 lg:w-1/4"
-              >
-                <h3 className="text-white mb-4 text-lg md:text-xl">{title}</h3>
-                <Chart
-                  type="doughnut"
-                  data={chartData[index + 3]}
-                  options={chartOptions}
-                  className="w-full"
-                />
-              </div>
-            )
-          )}
-        </div>
-
-        {/* Botón "Agregar más gráficas" en el costado derecho */}
+        {/* Botón "Agregar más gráficas" */}
         <div className="fixed bottom-8 right-8">
           <button
-            onClick={redirectToAddCharts}
+            onClick={() => navigate("/Parametrizacion")}
             className="bg-blue-500 text-white p-4 rounded-full shadow-lg hover:bg-blue-600 transition-colors"
           >
             Agregar más gráficas
