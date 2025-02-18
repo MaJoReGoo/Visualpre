@@ -61,7 +61,8 @@ export const Parametrizacion = () => {
         setVisuals(filteredData);
 
         // Cargar los visuales seleccionados desde el localStorage (si ya hubo cambios previos)
-        const savedSelectedVisuals = JSON.parse(localStorage.getItem("selectedVisuals")) || [];
+        const savedSelectedVisuals =
+          JSON.parse(localStorage.getItem("selectedVisuals")) || [];
         setSelectedVisuals(savedSelectedVisuals);
 
         setLoading(false);
@@ -81,6 +82,12 @@ export const Parametrizacion = () => {
     _filters["global"].value = value;
     setFilters(_filters);
     setGlobalFilterValue(value);
+  };
+
+  // Función para manejar la acción de editar visual
+  const onEditVisual = (visual) => {
+    console.log("Editando visual con ID:", visual.id);
+    navigate(`/EditServer/${visual.id}`); // Redirigir a la página de edición, pasando el ID
   };
 
   // Manejar la selección/desmarcado de un checkbox
@@ -120,10 +127,12 @@ export const Parametrizacion = () => {
   // Mostrar el botón de "Guardar cambios" si hay al menos un cambio
   const renderCheckboxList = () => {
     return (
-      <div className={`bg-black rounded-lg shadow-lg w-48 hover:bg-zinc-800 p-4 flex justify-center items-center mx-auto mt-6 ${selectedVisuals.length === 0 ? "" : "block"}`}>
+      <div
+        className={`bg-black rounded-lg shadow-lg p-4 flex justify-center items-center mx-auto mt-6 w-48`} // Ajustar el ancho si es necesario
+      >
         <Button
           label="Guardar cambios"
-          className="p-button-lg w-full text-white"
+          className="p-button-lg text-white"
           onClick={saveChanges}
         />
       </div>
@@ -140,14 +149,14 @@ export const Parametrizacion = () => {
               <Button
                 label="Agregar medición"
                 className="p-button-sm w-full text-white"
-                onClick={() => navigate('/AgregarMedicion')}
+                onClick={() => navigate("/AgregarMedicion")}
               />
             </div>
             <div className="card bg-black p-2 rounded-lg w-48 hover:bg-zinc-800">
               <Button
                 label="Agregar servidor"
                 className="p-button-sm w-full text-white"
-                onClick={() => navigate('/AgregarServidor')}
+                onClick={() => navigate("/AgregarServidor")}
               />
             </div>
           </div>
@@ -184,7 +193,14 @@ export const Parametrizacion = () => {
           className="text-white"
         >
           <Column
-            header={<input type="checkbox" onChange={onSelectAllChange} checked={selectedVisuals.length === visuals.length} className="rounded-lg" />}
+            header={
+              <input
+                type="checkbox"
+                onChange={onSelectAllChange}
+                checked={selectedVisuals.length === visuals.length}
+                className="rounded-lg"
+              />
+            }
             body={(rowData) => (
               <input
                 type="checkbox"
@@ -195,10 +211,26 @@ export const Parametrizacion = () => {
             )}
             style={{ width: "3rem" }}
           />
-          <Column field="serverName" header="Nombre del visual" style={{ minWidth: "12rem" }} />
-          <Column field="serverIp" header="IP Visual" style={{ minWidth: "12rem" }} />
-          <Column field="serverPort" header="Puerto Visual" style={{ minWidth: "10rem" }} />
-          <Column field="measurementTypes" header="Tipos de medición" style={{ minWidth: "12rem" }} />
+          <Column
+            field="serverName"
+            header="Nombre del visual"
+            style={{ minWidth: "12rem" }}
+          />
+          <Column
+            field="serverIp"
+            header="IP Visual"
+            style={{ minWidth: "12rem" }}
+          />
+          <Column
+            field="serverPort"
+            header="Puerto Visual"
+            style={{ minWidth: "10rem" }}
+          />
+          <Column
+            field="measurementTypes"
+            header="Tipos de medición"
+            style={{ minWidth: "12rem" }}
+          />
           <Column
             header="Editar"
             body={(rowData) => (

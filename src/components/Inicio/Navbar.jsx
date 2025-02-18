@@ -21,6 +21,12 @@ export default function Navbar() {
       className: "text-white m-2",
       to: "/Parametrizacion", // Ruta de navegación
     },
+    {
+      label: "Tipo de medición",
+      icon: "pi pi-star",
+      className: "text-white m-2",
+      to: "/ListarMediciones", // Ruta de navegación
+    },
   ];
 
   // Contenido a la izquierda (start) y derecha (end) del Menubar
@@ -35,14 +41,6 @@ export default function Navbar() {
 
   const end = (
     <div className="flex items-center gap-2">
-      {" "}
-      {/* Reducir espacio entre los elementos */}
-      <FaSearchengin className="w-5 h-6" />
-      <InputText
-        placeholder="Buscar"
-        type="text"
-        className="m-2 p-1 w-8rem sm:w-auto border-rounded rounded-full mr-2 px-2 bg-white" // Márgenes ajustados
-      />
     </div>
   );
 

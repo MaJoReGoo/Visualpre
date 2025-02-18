@@ -1,0 +1,8 @@
+.duration-200 {
+    transition-duration: 200ms;
+    padding: 5px;
+}
+.block {
+    display: block;
+    margin: 10px;
+}

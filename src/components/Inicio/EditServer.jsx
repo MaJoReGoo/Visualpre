@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom"; 
 import axios from "axios";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
@@ -7,93 +7,74 @@ import { InputNumber } from "primereact/inputnumber";
 import { MultiSelect } from "primereact/multiselect";
 
 export const EditServer = () => {
-  const location = useLocation();
+  const { id } = useParams(); // Obtén el `id` de la URL
   const navigate = useNavigate();
-  const serverId = location.state ? location.state.serverId : null;
 
+  // Estado para los datos del servidor
   const [serverData, setServerData] = useState({
     serverName: "",
     serverIp: "",
-    serverPort: null,
+    serverPort: "", // Cambiar a cadena vacía por defecto para InputNumber
     measurementTypeIds: [],
   });
 
-  const [loading, setLoading] = useState(true);
+  // Estado para los tipos de medición
   const [measurementTypes, setMeasurementTypes] = useState([]);
 
+  // Estado de carga
+  const [loading, setLoading] = useState(true);
+
+  // Cargar datos del servidor y tipos de medición
   useEffect(() => {
-    // Solo se ejecutará si serverId existe
-    if (serverId) {
-      const fetchServerData = async () => {
-        try {
-          const token = localStorage.getItem("authToken");
-
-          if (!token) {
-            alert("No estás autenticado. Por favor, inicia sesión.");
-            navigate("/login");
-            return;
-          }
-
-          const response = await axios.get(
-            `${import.meta.env.VITE_API_URL}/visuals/${serverId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-
-          setServerData({
-            serverName: response.data.serverName,
-            serverIp: response.data.serverIp,
-            serverPort: response.data.serverPort,
-            measurementTypeIds: response.data.measurementVisuals.map(
-              (visual) => visual.measurementType.id
-            ),
-          });
-        } catch (error) {
-          console.error("Error al cargar los datos del servidor", error);
-          if (error.response && error.response.status === 401) {
-            alert("Tu sesión ha expirado. Por favor, inicia sesión nuevamente.");
-            navigate("/login");
-          } else {
-            alert("Hubo un error al cargar los datos.");
-          }
-        } finally {
-          setLoading(false);
+    const fetchData = async () => {
+      try {
+        const token = localStorage.getItem("authToken");
+        if (!token) {
+          alert("No estás autenticado. Por favor, inicia sesión.");
+          navigate("/login");
+          return;
         }
-      };
 
-      const fetchMeasurementTypes = async () => {
-        try {
-          const token = localStorage.getItem("authToken");
-
-          if (!token) {
-            alert("No estás autenticado. Por favor, inicia sesión.");
-            navigate("/login");
-            return;
+        // Cargar datos del servidor
+        const serverResponse = await axios.get(
+          `${import.meta.env.VITE_API_URL}/visuals/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
+        );
+        setServerData({
+          serverName: serverResponse.data.serverName,
+          serverIp: serverResponse.data.serverIp,
+          serverPort: serverResponse.data.serverPort || "", // Aseguramos que el valor sea cadena vacía si no existe
+          measurementTypeIds: serverResponse.data.measurementVisuals.map(
+            (visual) => visual.measurementType.id
+          ),
+        });
 
-          const response = await axios.get(
-            `${import.meta.env.VITE_API_URL}/measurement-types`,
-            {
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-            }
-          );
-          setMeasurementTypes(response.data);
-        } catch (error) {
-          console.error("Error al cargar los tipos de medición", error);
-          alert("Hubo un error al cargar los tipos de medición.");
-        }
-      };
+        // Cargar tipos de medición
+        const measurementTypesResponse = await axios.get(
+          `${import.meta.env.VITE_API_URL}/measurement-types`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        setMeasurementTypes(measurementTypesResponse.data);
+      } catch (error) {
+        console.error("Error al cargar los datos", error);
+        alert("Hubo un error al cargar los datos.");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      fetchServerData();
-      fetchMeasurementTypes();
-    }
-  }, [serverId, navigate]);
+    fetchData();
+  }, [id, navigate]);
 
+  // Manejar cambios en los campos de texto
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setServerData((prevData) => ({
@@ -102,6 +83,7 @@ export const EditServer = () => {
     }));
   };
 
+  // Manejar cambios en los tipos de medición seleccionados
   const handleMeasurementTypeChange = (e) => {
     const uniqueMeasurementTypeIds = [...new Set(e.value)];
     setServerData((prevData) => ({
@@ -110,45 +92,35 @@ export const EditServer = () => {
     }));
   };
 
+  // Guardar cambios
   const handleSaveChanges = async () => {
     try {
       const token = localStorage.getItem("authToken");
-
       if (!token) {
         alert("No estás autenticado. Por favor, inicia sesión.");
         navigate("/login");
         return;
       }
-
-      const dataToUpdate = {
-        serverName: serverData.serverName,
-        serverIp: serverData.serverIp,
-        serverPort: serverData.serverPort,
-        measurementTypeIds: serverData.measurementTypeIds,
-      };
-
+  
       const response = await axios.patch(
-        `${import.meta.env.VITE_API_URL}/visuals/${serverId}`,
-        dataToUpdate,
+        `${import.meta.env.VITE_API_URL}/visuals/${id}`,
+        serverData,
         {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         }
       );
-
-      if (response.status === 200) {
-        alert("¡Servidor actualizado con éxito!");
-        navigate("/parametrizacion");
-      } else {
-        alert("Hubo un error al guardar los cambios.");
-      }
+  
+      alert("Datos actualizados correctamente");
+      navigate("/Parametrizacion"); // Redirige a la vista de parametrización después de guardar
     } catch (error) {
-      console.error("Error al guardar los cambios", error);
+      console.error("Error al guardar los datos", error);
       alert("Hubo un error al guardar los cambios.");
     }
   };
 
+  // Mostrar "Loading..." mientras se cargan los datos
   if (loading) {
     return <div>Loading...</div>;
   }
@@ -195,9 +167,7 @@ export const EditServer = () => {
               id="serverPort"
               name="serverPort"
               value={serverData.serverPort}
-              onValueChange={(e) =>
-                handleInputChange({ target: { name: "serverPort", value: e.value } })
-              }
+              onValueChange={(e) => handleInputChange({ target: { name: "serverPort", value: e.value } })}
               inputClassName="bg-black text-white"
               className="w-full p-3 bg-black border-2 border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Puerto del servidor"

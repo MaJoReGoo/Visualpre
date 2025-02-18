@@ -52,6 +52,10 @@ export const AgregarMedicion = () => {
     }
   };
 
+  const handleGoBack = () => {
+    navigate(-1); // Regresa a la página anterior
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br bg-black from-black to-blue-900 text-white flex items-center justify-center p-6">
       <div className="w-full max-w-md">
@@ -71,12 +75,19 @@ export const AgregarMedicion = () => {
             />
           </div>
 
-          <div className="flex justify-center mt-6">
+          <div className="flex justify-center mt-6 space-x-4">
+            {/* Botón de "Crear Medición" */}
             <Button
               label={loading ? "Guardando..." : "Crear Medición"}
               className="p-button-lg text-white bg-black rounded-lg p-2"
               onClick={handleSaveMeasurement}
               disabled={loading}
+            />
+            {/* Botón de "Regresar" */}
+            <Button
+              label="Regresar"
+              className="p-button-lg text-white bg-gray-600 rounded-lg p-2"
+              onClick={handleGoBack}
             />
           </div>
         </div>

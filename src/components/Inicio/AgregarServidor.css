@@ -1,0 +1,86 @@
+/* Redondear los bordes de los checkboxes */
+.p-checkbox-box {
+    border-radius: 6px !important; /* Bordes redondeados en cada checkbox */
+    margin-right: 10px; /* Margen entre el checkbox y el input */
+    border: 2px solid #ccc; /* Bordes suaves para el checkbox */
+}
+
+/* Estilo adicional: Bordes redondeados para los elementos seleccionados */
+.p-multiselect-item.p-highlight {
+    background-color: #e6f7ff !important; /* Fondo ligeramente azul para los seleccionados */
+    border-radius: 8px !important; /* Aseguramos que los elementos seleccionados también sean redondeados */
+}
+
+/* Redondear el borde del filtro */
+.p-multiselect-filter {
+    border-radius: 6px !important;
+    padding: 4px 8px; /* Espaciado adicional en el filtro */
+    margin-bottom: 8px; /* Separación entre filtro y los items */
+    background-color: #f7f7f7; /* Fondo suave para el filtro */
+}
+
+/* Resto de los estilos existentes */
+.p-checkbox-box .p-checkbox-icon {
+    display: none !important;
+}
+
+.p-checkbox-box {
+    background-color: transparent !important;
+    border: none !important;
+}
+
+.p-checkbox-checked .p-checkbox-icon {
+    display: none !important;
+}
+
+.p-multiselect-filter {
+    color: #aaa;
+    margin: 0 15px;
+    font-size: 14px; /* Asegurarse de que el texto sea legible */
+}
+
+/* Ajuste del contenedor de selección */
+element.style {
+    z-index: 1000;
+    position: relative; /* Cambiar de absolute a relative para evitar que se mueva */
+    top: 0; /* Asegurarse que no se desplace fuera de su contenedor */
+    left: 0;
+    min-width: 392px;
+    transform-origin: center top;
+    padding: 10px;
+}
+
+/* Estilos para los inputs, select, etc. */
+button, input, optgroup, select, textarea {
+    font-family: inherit;
+    font-feature-settings: inherit;
+    font-variation-settings: inherit;
+    font-size: 100%;
+    font-weight: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+}
+.p-multiselect-item {
+    border-radius: 8px !important;
+    margin-bottom: 8px;
+    padding: 8px 12px;
+    background-color: #000000;
+}
+.p-multiselect {
+    border-radius: 12px !important;
+    overflow: hidden;
+    padding: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+.p-multiselect-item {
+    border-radius: 8px !important;
+    margin-bottom: 1px;
+    padding: 8px 5px;
+    background-color: #000000;
+}
+.p-multiselect-item.p-highlight {
+    background-color: #000000 !important;
+    border-radius: 8px !important;
+}

@@ -17,6 +17,41 @@ export function Inicio() {
     if (savedSelectedVisuals) {
       setSelectedVisuals(JSON.parse(savedSelectedVisuals));
     }
+
+
+// URL que proporcionaste
+const url = "http://192.168.1.190:9182/metrics";
+
+// Función para obtener y procesar las métricas
+async function fetchAndProcessMetrics() {
+    try {
+        // Hacer la solicitud GET a la URL sin 'no-cors'
+        const response = await fetch(url, { mode: 'no-cors' });
+
+        
+        // Verificar si la respuesta fue exitosa
+        if (!response.ok) {
+            throw new Error(`Error al obtener las métricas: ${response.status}`);
+        }
+
+        // Leer el texto de la respuesta
+        const text = await response.text();
+        
+        // Mostrar el texto de las métricas en la consola
+        console.log(text);
+
+    } catch (error) {
+        console.error("Error al obtener las métricas:", error);
+    }
+}
+
+// Llamar a la función
+fetchAndProcessMetrics();
+
+
+
+
+
   }, []);
 
   // Función para obtener los datos de las gráficas según el servidor
@@ -24,7 +59,6 @@ export function Inicio() {
     if (selectedVisuals.length === 0) return;
 
     try {
-      // Simula la obtención de datos basados en el servidor (visual)
       const fetchedData = selectedVisuals.map((visual) => {
         return {
           labels: ["A", "B", "C"],
@@ -56,17 +90,23 @@ export function Inicio() {
       return <div className="text-center text-white">No hay servidores seleccionados para la vista.</div>;
     }
 
-    return selectedVisuals.map((visual, index) => (
-      <div key={index} className="text-center w-full sm:w-1/2 md:w-1/3 lg:w-1/4">
-        <h3 className="text-white mb-4 text-lg md:text-xl">{`Gráfica del servidor ${visual.serverName}`}</h3>
-        <Chart
-          type="doughnut"
-          data={chartData[index]}
-          options={chartOptions}
-          className={`w-full transition-opacity duration-500 ${transitioning ? "opacity-0" : "opacity-100"}`}
-        />
+    // Only render charts for the current server in the carousel
+    const currentServerCharts = chartData[currentIndex] ? (
+      <div className="text-center w-full sm:w-1/2 md:w-1/3 lg:w-1/4">
+        <h3 className="text-white mb-4 text-lg md:text-xl">{`Gráficas del servidor ${selectedVisuals[currentIndex].serverName}`}</h3>
+        {chartData[currentIndex].datasets.map((dataset, idx) => (
+          <Chart
+            key={idx}
+            type="doughnut"
+            data={chartData[currentIndex]}
+            options={chartOptions}
+            className={`w-full transition-opacity duration-500 ${transitioning ? "opacity-0" : "opacity-100"}`}
+          />
+        ))}
       </div>
-    ));
+    ) : null;
+
+    return currentServerCharts;
   };
 
   useEffect(() => {

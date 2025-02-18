@@ -6,6 +6,7 @@ import { Login } from "./components/Login/login";
 import { EditServer } from "./components/Inicio/EditServer";
 import { AgregarMedicion } from "./components/Inicio/AgregarMedicion";
 import { AgregarServidor } from "./components/Inicio/AgregarServidor";
+import { ListarMediciones } from "./components/Inicio/ListadoMedicion";
 
 function App() {
   return (
@@ -15,9 +16,10 @@ function App() {
         <Route path="/" element={<Login />} />
         <Route path="/Inicio" element={<Inicio />} />
         <Route path="/Parametrizacion" element={<Parametrizacion />} />
-        <Route path="/EditServer" element={<EditServer />} />
+        <Route path="/EditServer/:id" element={<EditServer />} />
         <Route path="/AgregarMedicion" element={<AgregarMedicion />} />
         <Route path="/AgregarServidor" element={<AgregarServidor />} />
+        <Route path="/ListarMediciones" element={<ListarMediciones />} />
       </Routes>
     </Router>
   );
