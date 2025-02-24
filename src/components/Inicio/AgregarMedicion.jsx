@@ -30,14 +30,16 @@ export const AgregarMedicion = () => {
         return;
       }
 
+      const data = {
+        name: measurementName, // Se asume que solo se necesita el nombre para crear la medición
+      };
+
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/measurement-types`,
-        {
-          name: measurementName,
-        },
+        `${import.meta.env.VITE_API_URL}/measurement-types/create`,
+        data,
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token}`, // Usar 'token' en lugar de 'yourToken'
           },
         }
       );
@@ -45,7 +47,10 @@ export const AgregarMedicion = () => {
       alert("¡Medición creada con éxito!");
       navigate("/parametrizacion");
     } catch (error) {
-      console.error("Error al guardar la medición", error);
+      console.error(
+        "Error al guardar la medición:",
+        error.response || error.message
+      );
       alert("Hubo un error al guardar la medición.");
     } finally {
       setLoading(false);
@@ -63,7 +68,10 @@ export const AgregarMedicion = () => {
 
         <div className="card p-4 bg-transparent shadow-xl">
           <div className="mb-4">
-            <label htmlFor="measurementName" className="block text-lg font-semibold">
+            <label
+              htmlFor="measurementName"
+              className="block text-lg font-semibold"
+            >
               Nombre de la Medición
             </label>
             <InputText
@@ -72,6 +80,7 @@ export const AgregarMedicion = () => {
               onChange={handleInputChange}
               className="w-full p-3 mt-2 text-white bg-black border-2 border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="Nombre de la medición"
+              autoComplete="off" // Desactiva el autocompletado
             />
           </div>
 

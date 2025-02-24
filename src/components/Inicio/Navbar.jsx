@@ -39,10 +39,7 @@ export default function Navbar() {
     />
   );
 
-  const end = (
-    <div className="flex items-center gap-2">
-    </div>
-  );
+  const end = <div className="flex items-center gap-2"></div>;
 
   // Modificación: Usamos una versión simple donde envuelves los items con NavLink
   const model = items.map((item) => ({

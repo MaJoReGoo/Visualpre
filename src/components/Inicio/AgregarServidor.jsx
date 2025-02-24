@@ -5,7 +5,7 @@ import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { InputNumber } from "primereact/inputnumber";
 import { MultiSelect } from "primereact/multiselect";
-import './AgregarServidor.css';
+import "./AgregarServidor.css";
 
 export const AgregarServidor = () => {
   const navigate = useNavigate();
@@ -16,7 +16,7 @@ export const AgregarServidor = () => {
     serverPort: null,
     measurementTypes: [],
   });
-  
+
   const [measurementTypes, setMeasurementTypes] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -30,10 +30,13 @@ export const AgregarServidor = () => {
           return;
         }
 
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/measurement-types`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/measurement-types`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
         setMeasurementTypes(response.data);
         setLoading(false);
       } catch (error) {
@@ -61,7 +64,11 @@ export const AgregarServidor = () => {
   }, []);
 
   const handleSaveServer = async () => {
-    if (!serverData.serverName || !serverData.serverIp || !serverData.serverPort) {
+    if (
+      !serverData.serverName ||
+      !serverData.serverIp ||
+      !serverData.serverPort
+    ) {
       alert("Por favor, completa todos los campos obligatorios.");
       return;
     }
@@ -83,7 +90,7 @@ export const AgregarServidor = () => {
       }
 
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/visuals`, 
+        `${import.meta.env.VITE_API_URL}/visuals`,
         dataToCreate,
         {
           headers: { Authorization: `Bearer ${token}` },
@@ -91,6 +98,9 @@ export const AgregarServidor = () => {
       );
 
       alert("¡Servidor creado con éxito!");
+      const serverId = response.data.id;
+
+      localStorage.setItem("serverId", serverId);
       navigate("/Parametrizacion");
     } catch (error) {
       console.error("Error al guardar el servidor", error);
@@ -109,12 +119,19 @@ export const AgregarServidor = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br bg-black from-black to-blue-900 text-white flex items-center justify-center p-6">
       <div className="w-full max-w-md">
-        <h2 className="text-3xl font-bold mb-4 text-center">Agregar Servidor</h2>
+        <h2 className="text-3xl font-bold mb-4 text-center">
+          Agregar Servidor
+        </h2>
         <div className="card p-4 bg-transparent shadow-xl">
           <form autoComplete="off">
             {/* Campos del formulario */}
             <div className="mb-4">
-              <label htmlFor="serverName" className="block text-lg font-semibold">Nombre del Servidor</label>
+              <label
+                htmlFor="serverName"
+                className="block text-lg font-semibold"
+              >
+                Nombre del Servidor
+              </label>
               <InputText
                 id="serverName"
                 name="serverName"
@@ -127,7 +144,9 @@ export const AgregarServidor = () => {
             </div>
 
             <div className="mb-4">
-              <label htmlFor="serverIp" className="block text-lg font-semibold">IP del Servidor</label>
+              <label htmlFor="serverIp" className="block text-lg font-semibold">
+                IP del Servidor
+              </label>
               <InputText
                 id="serverIp"
                 name="serverIp"
@@ -140,13 +159,20 @@ export const AgregarServidor = () => {
             </div>
 
             <div className="mb-4">
-              <label htmlFor="serverPort" className="block text-lg font-semibold">Puerto del Servidor</label>
+              <label
+                htmlFor="serverPort"
+                className="block text-lg font-semibold"
+              >
+                Puerto del Servidor
+              </label>
               <InputNumber
                 id="serverPort"
                 name="serverPort"
                 value={serverData.serverPort}
                 onValueChange={(e) =>
-                  handleInputChange({ target: { name: "serverPort", value: e.value } })
+                  handleInputChange({
+                    target: { name: "serverPort", value: e.value },
+                  })
                 }
                 autoComplete="off"
                 inputClassName="bg-black text-white"
@@ -156,7 +182,9 @@ export const AgregarServidor = () => {
             </div>
 
             <div className="mb-4">
-              <label className="block text-lg font-semibold">Tipos de Medición</label>
+              <label className="block text-lg font-semibold">
+                Tipos de Medición
+              </label>
               <div className="flex items-center rounded-lg p-3">
                 <MultiSelect
                   value={serverData.measurementTypes}

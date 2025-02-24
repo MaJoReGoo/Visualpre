@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Navbar from "./Navbar";
 import { Chart } from "primereact/chart";
 import { useNavigate } from "react-router-dom";
+import axios from "axios"; // Asegúrate de importar axios
 
 export function Inicio() {
   const [selectedVisuals, setSelectedVisuals] = useState([]);
@@ -17,41 +18,6 @@ export function Inicio() {
     if (savedSelectedVisuals) {
       setSelectedVisuals(JSON.parse(savedSelectedVisuals));
     }
-
-
-// URL que proporcionaste
-const url = "http://192.168.1.190:9182/metrics";
-
-// Función para obtener y procesar las métricas
-async function fetchAndProcessMetrics() {
-    try {
-        // Hacer la solicitud GET a la URL sin 'no-cors'
-        const response = await fetch(url, { mode: 'no-cors' });
-
-        
-        // Verificar si la respuesta fue exitosa
-        if (!response.ok) {
-            throw new Error(`Error al obtener las métricas: ${response.status}`);
-        }
-
-        // Leer el texto de la respuesta
-        const text = await response.text();
-        
-        // Mostrar el texto de las métricas en la consola
-        console.log(text);
-
-    } catch (error) {
-        console.error("Error al obtener las métricas:", error);
-    }
-}
-
-// Llamar a la función
-fetchAndProcessMetrics();
-
-
-
-
-
   }, []);
 
   // Función para obtener los datos de las gráficas según el servidor
@@ -59,18 +25,42 @@ fetchAndProcessMetrics();
     if (selectedVisuals.length === 0) return;
 
     try {
-      const fetchedData = selectedVisuals.map((visual) => {
-        return {
-          labels: ["A", "B", "C"],
-          datasets: [
+      const token = localStorage.getItem("authToken");
+      if (!token) {
+        alert("No estás autenticado. Por favor, inicia sesión.");
+        navigate("/login");
+        return;
+      }
+      // Usamos Promise.all para manejar las solicitudes asíncronas de manera concurrente
+      const fetchedData = await Promise.all(
+        selectedVisuals.map(async (visual) => {
+          console.log(`Obteniendo datos para el servidor con ID: ${visual.id}`);
+
+          // Asegúrate de que la URL esté correctamente construida
+          const response = await axios.get(
+            `${import.meta.env.VITE_API_URL}/visuals/${visual.id}`,
             {
-              data: [Math.random() * 500, Math.random() * 100, Math.random() * 200],
-              backgroundColor: ["#42A5F5", "#66BB6A", "#FF9800"],
-              hoverBackgroundColor: ["#1E88E5", "#81C784", "#FFA000"],
-            },
-          ],
-        };
-      });
+              headers: { Authorization: `Bearer ${token}` }, // Agregamos el token en los encabezados correctamente
+            }
+          );
+
+          // Si la respuesta no tiene datos válidos, puedes colocar valores por defecto
+          return {
+            labels: ["A", "B", "C"], // Cambia esto según los datos reales
+            datasets: [
+              {
+                data: response.data.metrics || [
+                  Math.random() * 500,
+                  Math.random() * 100,
+                  Math.random() * 200,
+                ],
+                backgroundColor: ["#42A5F5", "#66BB6A", "#FF9800"],
+                hoverBackgroundColor: ["#1E88E5", "#81C784", "#FFA000"],
+              },
+            ],
+          };
+        })
+      );
 
       setChartData(fetchedData);
       setChartOptions({
@@ -87,7 +77,11 @@ fetchAndProcessMetrics();
 
   const renderCharts = () => {
     if (selectedVisuals.length === 0) {
-      return <div className="text-center text-white">No hay servidores seleccionados para la vista.</div>;
+      return (
+        <div className="text-center text-white">
+          No hay servidores seleccionados para la vista.
+        </div>
+      );
     }
 
     // Only render charts for the current server in the carousel
@@ -100,7 +94,9 @@ fetchAndProcessMetrics();
             type="doughnut"
             data={chartData[currentIndex]}
             options={chartOptions}
-            className={`w-full transition-opacity duration-500 ${transitioning ? "opacity-0" : "opacity-100"}`}
+            className={`w-full transition-opacity duration-500 ${
+              transitioning ? "opacity-0" : "opacity-100"
+            }`}
           />
         ))}
       </div>
@@ -113,7 +109,9 @@ fetchAndProcessMetrics();
     const intervalId = setInterval(() => {
       setTransitioning(true);
       setTimeout(() => {
-        setCurrentIndex((prevIndex) => (prevIndex + 1) % selectedVisuals.length);
+        setCurrentIndex(
+          (prevIndex) => (prevIndex + 1) % selectedVisuals.length
+        );
         setTransitioning(false);
       }, 500);
     }, 5000);
@@ -128,7 +126,8 @@ fetchAndProcessMetrics();
         {/* Título de la primera sección */}
         <div className="text-center mt-8 mb-12">
           <h1 className="text-white text-3xl md:text-4xl font-semibold">
-            Servidor {selectedVisuals[currentIndex]?.serverName || "Desconocido"}
+            Servidor{" "}
+            {selectedVisuals[currentIndex]?.serverName || "Desconocido"}
           </h1>
         </div>
 
@@ -140,13 +139,23 @@ fetchAndProcessMetrics();
         {/* Controles de navegación manual con flechas */}
         <div className="flex justify-center items-center gap-4 mt-6">
           <button
-            onClick={() => setCurrentIndex((prevIndex) => (prevIndex - 1 + selectedVisuals.length) % selectedVisuals.length)}
+            onClick={() =>
+              setCurrentIndex(
+                (prevIndex) =>
+                  (prevIndex - 1 + selectedVisuals.length) %
+                  selectedVisuals.length
+              )
+            }
             className="bg-transparent text-white p-4 rounded-full shadow-lg hover:bg-blue-600 transition-colors text-2xl"
           >
             &#8592; {/* Flecha hacia la izquierda */}
           </button>
           <button
-            onClick={() => setCurrentIndex((prevIndex) => (prevIndex + 1) % selectedVisuals.length)}
+            onClick={() =>
+              setCurrentIndex(
+                (prevIndex) => (prevIndex + 1) % selectedVisuals.length
+              )
+            }
             className="bg-transparent text-white p-4 rounded-full shadow-lg hover:bg-blue-600 transition-colors text-2xl"
           >
             &#8594; {/* Flecha hacia la derecha */}

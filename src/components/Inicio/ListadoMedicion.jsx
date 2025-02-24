@@ -75,7 +75,9 @@ export const ListarMediciones = () => {
       }
 
       const response = await axios.patch(
-        `${import.meta.env.VITE_API_URL}/measurement-types/${editingMeasurement.id}`,
+        `${import.meta.env.VITE_API_URL}/measurement-types/${
+          editingMeasurement.id
+        }`,
         { name: updatedName },
         {
           headers: {
@@ -99,7 +101,10 @@ export const ListarMediciones = () => {
       );
       setMediciones(newMediciones.data);
     } catch (error) {
-      console.error("Error al actualizar la medición", error.response ? error.response.data : error);
+      console.error(
+        "Error al actualizar la medición",
+        error.response ? error.response.data : error
+      );
       alert("Hubo un error al actualizar la medición.");
     } finally {
       setLoading(false);
@@ -114,10 +119,12 @@ export const ListarMediciones = () => {
     <div className="min-h-screen bg-gradient-to-br bg-black from-black to-blue-900 text-white">
       {/* Ensure the Navbar has the same background as the rest of the page */}
       <Navbar />
-      
+
       <div className="flex flex-col items-center justify-center p-24">
         <div className="w-full max-w-md">
-          <h2 className="text-3xl font-bold mb-6 text-center">Lista de Mediciones</h2>
+          <h2 className="text-3xl font-bold mb-6 text-center">
+            Lista de Mediciones
+          </h2>
 
           <div className="card p-4 bg-transparent shadow-xl rounded-xl">
             {loading ? (
@@ -127,13 +134,16 @@ export const ListarMediciones = () => {
                 <ul>
                   {mediciones && mediciones.length > 0 ? (
                     mediciones.map((medicion) => (
-                      <li key={medicion.id} className="mb-4 border-b border-gray-600 pb-2">
+                      <li
+                        key={medicion.id}
+                        className="mb-4 border-b border-gray-600 pb-2"
+                      >
                         <div className="flex items-center justify-between">
                           <span className="text-xl">{medicion.name}</span>
                           <Button
                             icon={<FaEdit />}
                             className="p-button-sm text-white transition duration-200 rounded"
-                            onClick={() => handleEditClick(medicion)} 
+                            onClick={() => handleEditClick(medicion)}
                           />
                         </div>
                       </li>
@@ -155,18 +165,20 @@ export const ListarMediciones = () => {
           className="bg-black text-white rounded-xl shadow-lg p-4"
         >
           <div>
-            <label htmlFor="updatedName" className="block text-lg font-semibold">
+            <label
+              htmlFor="updatedName"
+              className="block text-lg font-semibold"
+            >
               Editar nombre medición
             </label>
             <InputText
-  id="updatedName"
-  value={updatedName}
-  onChange={(e) => setUpdatedName(e.target.value)}
-  className="w-full p-3 mt-2 text-white bg-black border-2 border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-  placeholder="Nuevo nombre de la medición"
-  autoComplete="off" // Agrega esta línea
-/>
-
+              id="updatedName"
+              value={updatedName}
+              onChange={(e) => setUpdatedName(e.target.value)}
+              className="w-full p-3 mt-2 text-white bg-black border-2 border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Nuevo nombre de la medición"
+              autoComplete="off" // Agrega esta línea
+            />
           </div>
 
           <div className="flex justify-center mt-6 space-x-4">
