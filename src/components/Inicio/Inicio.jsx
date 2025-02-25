@@ -4,17 +4,18 @@ import { Chart } from "primereact/chart";
 import { useNavigate } from "react-router-dom";
 import axios from "axios"; // Asegúrate de importar axios
 
-export function Inicio() {
-  const [selectedVisuals, setSelectedVisuals] = useState([]);
-  const [chartData, setChartData] = useState([]);
-  const [chartOptions, setChartOptions] = useState({});
-  const [transitioning, setTransitioning] = useState(false);
-  const [currentIndex, setCurrentIndex] = useState(0);
+export const Inicio = () => {
+  const [selectedVisuals, setSelectedVisuals] = useState([]); // Servidores seleccionados
+  const [chartData, setChartData] = useState([]); // Datos de las gráficas
+  const [chartOptions, setChartOptions] = useState({}); // Opciones de la gráfica
+  const [transitioning, setTransitioning] = useState(false); // Animación de transición
+  const [currentIndex, setCurrentIndex] = useState(0); // Índice del servidor actual
+  const [serverDetails, setServerDetails] = useState({}); // Detalles del servidor (IP, Nombre)
   const navigate = useNavigate();
 
   // Recuperamos los servidores seleccionados desde el localStorage
   useEffect(() => {
-    const savedSelectedVisuals = localStorage.getItem("selectedVisuals");
+    const savedSelectedVisuals = localStorage.getItem("selectedServers");
     if (savedSelectedVisuals) {
       setSelectedVisuals(JSON.parse(savedSelectedVisuals));
     }
@@ -25,35 +26,42 @@ export function Inicio() {
     if (selectedVisuals.length === 0) return;
 
     try {
-      const token = localStorage.getItem("authToken");
-      if (!token) {
-        alert("No estás autenticado. Por favor, inicia sesión.");
-        navigate("/login");
-        return;
-      }
-      // Usamos Promise.all para manejar las solicitudes asíncronas de manera concurrente
       const fetchedData = await Promise.all(
         selectedVisuals.map(async (visual) => {
           console.log(`Obteniendo datos para el servidor con ID: ${visual.id}`);
 
-          // Asegúrate de que la URL esté correctamente construida
+          // Realizamos la consulta para obtener los datos del servidor con el ID específico
           const response = await axios.get(
-            `${import.meta.env.VITE_API_URL}/visuals/${visual.id}`,
-            {
-              headers: { Authorization: `Bearer ${token}` }, // Agregamos el token en los encabezados correctamente
-            }
+            `${import.meta.env.VITE_API_URL}/servers/${visual.id}`
           );
 
-          // Si la respuesta no tiene datos válidos, puedes colocar valores por defecto
+          // Guardamos los detalles del servidor directamente
+          setServerDetails((prevDetails) => ({
+            ...prevDetails,
+            [visual.id]: response.data, // Guardamos el objeto completo del servidor
+          }));
+
+          // Verifica si la respuesta contiene las métricas necesarias
+          if (!response.data || !response.data.typeMeasurements) {
+            console.error("No se encontraron métricas para el servidor", visual.id);
+            return {
+              labels: ["A", "B", "C"], // Fallback para los datos
+              datasets: [
+                {
+                  data: [Math.random() * 500, Math.random() * 100, Math.random() * 200],
+                  backgroundColor: ["#42A5F5", "#66BB6A", "#FF9800"],
+                  hoverBackgroundColor: ["#1E88E5", "#81C784", "#FFA000"],
+                },
+              ],
+            };
+          }
+
+          // Usamos los datos reales de la respuesta de la API
           return {
-            labels: ["A", "B", "C"], // Cambia esto según los datos reales
+            labels: response.data.typeMeasurements.map((measurement) => measurement.name), // Usamos los nombres de las mediciones
             datasets: [
               {
-                data: response.data.metrics || [
-                  Math.random() * 500,
-                  Math.random() * 100,
-                  Math.random() * 200,
-                ],
+                data: response.data.typeMeasurements.map((measurement) => measurement.value || Math.random() * 100), // Usamos los valores de las mediciones o valores aleatorios
                 backgroundColor: ["#42A5F5", "#66BB6A", "#FF9800"],
                 hoverBackgroundColor: ["#1E88E5", "#81C784", "#FFA000"],
               },
@@ -73,7 +81,7 @@ export function Inicio() {
 
   useEffect(() => {
     fetchChartData();
-  }, [selectedVisuals]); // Se vuelve a ejecutar cada vez que cambian los servidores seleccionados
+  }, [selectedVisuals]); // Re-llama a la función cuando cambian los servidores seleccionados
 
   const renderCharts = () => {
     if (selectedVisuals.length === 0) {
@@ -84,27 +92,48 @@ export function Inicio() {
       );
     }
 
-    // Only render charts for the current server in the carousel
-    const currentServerCharts = chartData[currentIndex] ? (
-      <div className="text-center w-full sm:w-1/2 md:w-1/3 lg:w-1/4">
-        <h3 className="text-white mb-4 text-lg md:text-xl">{`Gráficas del servidor ${selectedVisuals[currentIndex].serverName}`}</h3>
+    if (!chartData[currentIndex]) {
+      return (
+        <div className="text-center text-white">
+          Cargando las gráficas para el servidor {selectedVisuals[currentIndex]?.name || "Desconocido"}...
+        </div>
+      );
+    }
+
+    // Si no se encontraron métricas
+    if (!chartData[currentIndex].datasets) {
+      return (
+        <div className="text-center text-white">
+          No se encontraron métricas para el servidor {selectedVisuals[currentIndex]?.name || "Desconocido"}.
+        </div>
+      );
+    }
+
+    const currentServerCharts = chartData[currentIndex]?.datasets ? (
+      <div className="flex flex-col items-center w-full sm:w-1/2 md:w-1/3 lg:w-1/4 mx-auto">
+        <h3 className="text-white mb-4 text-lg md:text-xl">
+          {`Gráficas del servidor ${selectedVisuals[currentIndex]?.name || "Desconocido"}`}
+        </h3>
+        {/* Mostrar IP del servidor */}
+        <p className="text-white text-sm mb-4">{`ipAddress: ${serverDetails[selectedVisuals[currentIndex]?.id]?.ipAddress || "No disponible"}`}</p>
         {chartData[currentIndex].datasets.map((dataset, idx) => (
           <Chart
             key={idx}
             type="doughnut"
             data={chartData[currentIndex]}
             options={chartOptions}
-            className={`w-full transition-opacity duration-500 ${
-              transitioning ? "opacity-0" : "opacity-100"
-            }`}
+            className={`w-full transition-opacity duration-500 ${transitioning ? "opacity-0" : "opacity-100"}`}
           />
         ))}
       </div>
-    ) : null;
+    ) : (
+      <div className="text-center text-white">Cargando las gráficas...</div>
+    );
 
     return currentServerCharts;
   };
 
+  // Intervalo para cambiar entre los servidores seleccionados
   useEffect(() => {
     const intervalId = setInterval(() => {
       setTransitioning(true);
@@ -113,65 +142,18 @@ export function Inicio() {
           (prevIndex) => (prevIndex + 1) % selectedVisuals.length
         );
         setTransitioning(false);
-      }, 500);
-    }, 5000);
+      }, 500); // Duración de la transición
+    }, 8000); // Intervalo de cambio de servidor
 
-    return () => clearInterval(intervalId);
+    return () => clearInterval(intervalId); // Limpiar el intervalo cuando el componente se desmonte
   }, [selectedVisuals]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br bg-black from-black to-blue-900 text-white">
       <Navbar />
-      <div className="container mx-auto p-6">
-        {/* Título de la primera sección */}
-        <div className="text-center mt-8 mb-12">
-          <h1 className="text-white text-3xl md:text-4xl font-semibold">
-            Servidor{" "}
-            {selectedVisuals[currentIndex]?.serverName || "Desconocido"}
-          </h1>
-        </div>
-
-        {/* Carrusel de Gráficas */}
-        <div className="flex flex-wrap justify-center gap-8 transition-all duration-500 ease-in-out opacity-100">
-          {renderCharts()}
-        </div>
-
-        {/* Controles de navegación manual con flechas */}
-        <div className="flex justify-center items-center gap-4 mt-6">
-          <button
-            onClick={() =>
-              setCurrentIndex(
-                (prevIndex) =>
-                  (prevIndex - 1 + selectedVisuals.length) %
-                  selectedVisuals.length
-              )
-            }
-            className="bg-transparent text-white p-4 rounded-full shadow-lg hover:bg-blue-600 transition-colors text-2xl"
-          >
-            &#8592; {/* Flecha hacia la izquierda */}
-          </button>
-          <button
-            onClick={() =>
-              setCurrentIndex(
-                (prevIndex) => (prevIndex + 1) % selectedVisuals.length
-              )
-            }
-            className="bg-transparent text-white p-4 rounded-full shadow-lg hover:bg-blue-600 transition-colors text-2xl"
-          >
-            &#8594; {/* Flecha hacia la derecha */}
-          </button>
-        </div>
-
-        {/* Botón "Agregar más gráficas" */}
-        <div className="fixed bottom-8 right-8">
-          <button
-            onClick={() => navigate("/Parametrizacion")}
-            className="bg-blue-500 text-white p-4 rounded-full shadow-lg hover:bg-blue-600 transition-colors"
-          >
-            Agregar más gráficas
-          </button>
-        </div>
+      <div className="card mt-28 mx-auto max-w-7xl shadow-xl p-6 rounded-lg bg-transparent">
+        {renderCharts()}
       </div>
     </div>
   );
-}
+};

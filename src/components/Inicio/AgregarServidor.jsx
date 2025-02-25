@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
-import { InputNumber } from "primereact/inputnumber";
 import { MultiSelect } from "primereact/multiselect";
 import "./AgregarServidor.css";
 
@@ -11,43 +10,42 @@ export const AgregarServidor = () => {
   const navigate = useNavigate();
 
   const [serverData, setServerData] = useState({
-    serverName: "",
-    serverIp: "",
-    serverPort: null,
-    measurementTypes: [],
+    name: "",
+    ipAddress: "",
+    typeMeasurements: [],
   });
 
-  const [measurementTypes, setMeasurementTypes] = useState([]);
+  const [typeMeasurements, setTypeMeasurements] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Fetch tipos de medición
   useEffect(() => {
-    const fetchMeasurementTypes = async () => {
+    const fetchTypeMeasurements = async () => {
       try {
-        const token = localStorage.getItem("authToken");
-        if (!token) {
-          alert("No estás autenticado. Por favor, inicia sesión.");
-          navigate("/login");
-          return;
-        }
-
         const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/measurement-types`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
+          `${import.meta.env.VITE_API_URL}/types-measurements`
         );
-
-        setMeasurementTypes(response.data);
+  
+        console.log(response.data); // Verifica la estructura real
+        
+        // Verifica que la respuesta tenga un array de objetos con 'id' y 'name'
+        if (response.data && Array.isArray(response.data)) {
+          setTypeMeasurements(response.data); // Asigna la lista al estado
+        } else {
+          console.error("Error: La estructura de la respuesta no es la esperada.");
+        }
+  
         setLoading(false);
       } catch (error) {
         console.error("Error al cargar los tipos de medición", error);
         alert("Hubo un error al cargar los tipos de medición.");
       }
     };
+  
+    fetchTypeMeasurements();
+  }, []);
 
-    fetchMeasurementTypes();
-  }, [navigate]);
-
+  // Manejo de cambios en los inputs del formulario
   const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
     setServerData((prevData) => ({
@@ -56,51 +54,34 @@ export const AgregarServidor = () => {
     }));
   }, []);
 
+  // Manejo de selección de tipos de medición
   const handleMeasurementChange = useCallback((e) => {
     setServerData((prevData) => ({
       ...prevData,
-      measurementTypes: e.value,
+      typeMeasurements: e.value, // Asigna los valores seleccionados
     }));
   }, []);
 
+  // Guardar el servidor
   const handleSaveServer = async () => {
-    if (
-      !serverData.serverName ||
-      !serverData.serverIp ||
-      !serverData.serverPort
-    ) {
+    if (!serverData.name || !serverData.ipAddress || !serverData.typeMeasurements.length) {
       alert("Por favor, completa todos los campos obligatorios.");
       return;
     }
 
     const dataToCreate = {
-      serverName: serverData.serverName,
-      serverIp: serverData.serverIp,
-      serverPort: serverData.serverPort,
-      measurementTypeIds: serverData.measurementTypes,
+      name: serverData.name,
+      ipAddress: serverData.ipAddress,
+      typeMeasurements: serverData.typeMeasurements,
     };
 
     try {
-      const token = localStorage.getItem("authToken");
-
-      if (!token) {
-        alert("No estás autenticado. Por favor, inicia sesión.");
-        navigate("/login");
-        return;
-      }
-
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/visuals`,
-        dataToCreate,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
+        `${import.meta.env.VITE_API_URL}/servers/create`,
+        dataToCreate
       );
 
       alert("¡Servidor creado con éxito!");
-      const serverId = response.data.id;
-
-      localStorage.setItem("serverId", serverId);
       navigate("/Parametrizacion");
     } catch (error) {
       console.error("Error al guardar el servidor", error);
@@ -108,6 +89,7 @@ export const AgregarServidor = () => {
     }
   };
 
+  // Regresar a la página anterior
   const handleGoBack = () => {
     navigate("/Parametrizacion"); // Regresa a la página anterior
   };
@@ -124,18 +106,15 @@ export const AgregarServidor = () => {
         </h2>
         <div className="card p-4 bg-transparent shadow-xl">
           <form autoComplete="off">
-            {/* Campos del formulario */}
+            {/* Nombre del servidor */}
             <div className="mb-4">
-              <label
-                htmlFor="serverName"
-                className="block text-lg font-semibold"
-              >
+              <label htmlFor="name" className="block text-lg font-semibold">
                 Nombre del Servidor
               </label>
               <InputText
-                id="serverName"
-                name="serverName"
-                value={serverData.serverName}
+                id="name"
+                name="name"
+                value={serverData.name}
                 onChange={handleInputChange}
                 autoComplete="off"
                 className="w-full p-3 mt-2 text-white bg-black border-2 border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -143,14 +122,15 @@ export const AgregarServidor = () => {
               />
             </div>
 
+            {/* IP del servidor */}
             <div className="mb-4">
-              <label htmlFor="serverIp" className="block text-lg font-semibold">
+              <label htmlFor="ipAddress" className="block text-lg font-semibold">
                 IP del Servidor
               </label>
               <InputText
-                id="serverIp"
-                name="serverIp"
-                value={serverData.serverIp}
+                id="ipAddress"
+                name="ipAddress"
+                value={serverData.ipAddress}
                 onChange={handleInputChange}
                 autoComplete="off"
                 className="w-full p-3 mt-2 text-white bg-black border-2 border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -158,40 +138,18 @@ export const AgregarServidor = () => {
               />
             </div>
 
-            <div className="mb-4">
-              <label
-                htmlFor="serverPort"
-                className="block text-lg font-semibold"
-              >
-                Puerto del Servidor
-              </label>
-              <InputNumber
-                id="serverPort"
-                name="serverPort"
-                value={serverData.serverPort}
-                onValueChange={(e) =>
-                  handleInputChange({
-                    target: { name: "serverPort", value: e.value },
-                  })
-                }
-                autoComplete="off"
-                inputClassName="bg-black text-white"
-                className="w-full p-3 mt-2 text-white bg-black border-2 border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Puerto del servidor"
-              />
-            </div>
-
+            {/* Tipos de medición */}
             <div className="mb-4">
               <label className="block text-lg font-semibold">
                 Tipos de Medición
               </label>
               <div className="flex items-center rounded-lg p-3">
                 <MultiSelect
-                  value={serverData.measurementTypes}
-                  options={measurementTypes}
+                  value={serverData.typeMeasurements}
+                  options={typeMeasurements} // Usamos el estado 'typeMeasurements' con los datos de la API
                   onChange={handleMeasurementChange}
-                  optionLabel="name"
-                  optionValue="id"
+                  optionLabel="name" // El nombre que se muestra en la lista
+                  optionValue="id" // El valor que se guarda (id del tipo de medición)
                   placeholder="Selecciona tipos de medición"
                   className="w-full p-4 text-white bg-black border-2 border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   panelClassName="bg-black text-white mt-2 rounded-lg p-3"
@@ -207,13 +165,13 @@ export const AgregarServidor = () => {
               {/* Botón de "Guardar Servidor" */}
               <Button
                 label="Guardar Servidor"
-                className="p-button-lg text-white bg-black rounded-lg p-2 hover:bg-gray-800"
+                className="p-button-lg text-white bg-black rounded-lg p-3 hover:bg-gray-800"
                 onClick={handleSaveServer}
               />
               {/* Botón de "Regresar" */}
               <Button
                 label="Regresar"
-                className="p-button-lg text-white bg-gray-600 rounded-lg p-2 hover:bg-gray-700"
+                className="p-button-lg text-white bg-gray-500 rounded-lg p-3 hover:bg-gray-600"
                 onClick={handleGoBack}
               />
             </div>

@@ -1,0 +1,42 @@
+/* Ajustamos el panel para un scroll vertical y para que todo se vea ordenado */
+.p-multiselect-panel {
+    max-height: 300px; /* Limita la altura del panel */
+    overflow-y: auto; /* Activamos el desplazamiento solo vertical */
+    padding: 10px 0; /* Espaciado superior e inferior */
+    box-sizing: border-box; /* Asegura que el padding no afecte al tamaño total */
+  }
+  
+  /* Ajuste de las opciones dentro del panel para que no estén apretadas */
+  .p-multiselect-item {
+    padding: 12px 20px; /* Espaciado generoso dentro de cada opción */
+    margin-bottom: 8px; /* Espacio entre las opciones */
+    border-radius: 8px; /* Bordes redondeados para las opciones */
+    background-color: #333; /* Fondo oscuro para las opciones */
+    transition: background-color 0.3s ease; /* Transición suave en hover */
+  }
+  
+  /* Estilo al pasar el mouse sobre las opciones */
+  .p-multiselect-item:hover {
+    background-color: #1e40af; /* Fondo azul claro al pasar el mouse */
+    color: white; /* Texto blanco */
+  }
+  
+  /* Estilo para el input de búsqueda */
+
+  .p-multiselect-filter {
+    color: #aaa;
+    margin: 0 25px;
+    font-size: 14px;
+    width: 90%;
+}
+button, input, optgroup, select, textarea {
+    font-family: inherit;
+    font-feature-settings: inherit;
+    font-variation-settings: inherit;
+    font-size: 100%;
+    font-weight: inherit;
+    line-height: inherit;
+    letter-spacing: inherit;
+    color: inherit;
+    margin: 0 5px;
+}

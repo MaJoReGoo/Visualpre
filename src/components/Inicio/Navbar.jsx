@@ -1,8 +1,6 @@
 import React from "react";
 import { Menubar } from "primereact/menubar";
-import { InputText } from "primereact/inputtext";
 import { Badge } from "primereact/badge";
-import { FaSearchengin } from "react-icons/fa";
 import logo from "../../assets/Visualpre.png";
 import { NavLink } from "react-router-dom"; // Importar NavLink
 
@@ -13,7 +11,7 @@ export default function Navbar() {
       label: "Visuales",
       icon: "pi pi-home",
       className: "text-white m-2",
-      to: "/Inicio", // Ruta de navegación
+      to: "/", // Ruta de navegación
     },
     {
       label: "Parametrización",

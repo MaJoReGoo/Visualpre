@@ -16,29 +16,17 @@ export const ListarMediciones = () => {
   const [showModal, setShowModal] = useState(false);
   const navigate = useNavigate();
 
+  // Cargar las mediciones desde la API
   useEffect(() => {
     const fetchMediciones = async () => {
       setLoading(true);
       try {
-        const token = localStorage.getItem("authToken");
-
-        if (!token) {
-          alert("No estás autenticado. Por favor, inicia sesión.");
-          navigate("/login");
-          return;
-        }
-
         const response = await axios.get(
-          `${import.meta.env.VITE_API_URL}/measurement-types`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
+          `${import.meta.env.VITE_API_URL}/types-measurements`
         );
 
         if (response.data) {
-          setMediciones(response.data);
+          setMediciones(response.data); // Guardamos las mediciones obtenidas
         }
       } catch (error) {
         console.error("Error al obtener las mediciones", error);
@@ -51,12 +39,14 @@ export const ListarMediciones = () => {
     fetchMediciones();
   }, [navigate]);
 
+  // Manejar clic en el botón de editar
   const handleEditClick = (medicion) => {
     setEditingMeasurement(medicion);
-    setUpdatedName(medicion.name);
+    setUpdatedName(medicion.name); // Cargar el nombre de la medición a editar
     setShowModal(true);
   };
 
+  // Guardar cambios en el nombre de la medición
   const handleSaveEdit = async () => {
     if (!updatedName.trim()) {
       alert("Por favor, ingresa un nombre para la medición.");
@@ -66,24 +56,12 @@ export const ListarMediciones = () => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem("authToken");
-
-      if (!token) {
-        alert("No estás autenticado. Por favor, inicia sesión.");
-        navigate("/login");
-        return;
-      }
-
-      const response = await axios.patch(
-        `${import.meta.env.VITE_API_URL}/measurement-types/${
+      // Enviar la actualización del nombre a la API
+      await axios.patch(
+        `${import.meta.env.VITE_API_URL}/types-measurements/update/${
           editingMeasurement.id
         }`,
-        { name: updatedName },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+        { name: updatedName }
       );
 
       alert("¡Medición actualizada con éxito!");
@@ -91,33 +69,25 @@ export const ListarMediciones = () => {
       setUpdatedName("");
       setShowModal(false);
 
-      const newMediciones = await axios.get(
-        `${import.meta.env.VITE_API_URL}/measurement-types`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setMediciones(newMediciones.data);
+      // Actualizar la lista de mediciones
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/types-measurements`);
+      setMediciones(response.data);
     } catch (error) {
-      console.error(
-        "Error al actualizar la medición",
-        error.response ? error.response.data : error
-      );
+      console.error("Error al actualizar la medición", error);
       alert("Hubo un error al actualizar la medición.");
     } finally {
       setLoading(false);
     }
   };
 
+  // Función para regresar
   const handleGoBack = () => {
     navigate("/Parametrizacion");
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br bg-black from-black to-blue-900 text-white">
-      {/* Ensure the Navbar has the same background as the rest of the page */}
+      {/* Asegúrate de que el Navbar tenga el mismo fondo que el resto de la página */}
       <Navbar />
 
       <div className="flex flex-col items-center justify-center p-24">
@@ -143,7 +113,7 @@ export const ListarMediciones = () => {
                           <Button
                             icon={<FaEdit />}
                             className="p-button-sm text-white transition duration-200 rounded"
-                            onClick={() => handleEditClick(medicion)}
+                            onClick={() => handleEditClick(medicion)} // Clic para editar
                           />
                         </div>
                       </li>
@@ -157,50 +127,52 @@ export const ListarMediciones = () => {
           </div>
         </div>
 
-        {/* Modal de edición */}
+        {/* Modal para editar */}
         <Dialog
-          visible={showModal}
-          style={{ width: "400px" }}
-          onHide={() => setShowModal(false)}
-          className="bg-black text-white rounded-xl shadow-lg p-4"
-        >
-          <div>
-            <label
-              htmlFor="updatedName"
-              className="block text-lg font-semibold"
-            >
-              Editar nombre medición
-            </label>
-            <InputText
-              id="updatedName"
-              value={updatedName}
-              onChange={(e) => setUpdatedName(e.target.value)}
-              className="w-full p-3 mt-2 text-white bg-black border-2 border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              placeholder="Nuevo nombre de la medición"
-              autoComplete="off" // Agrega esta línea
-            />
-          </div>
+  visible={showModal}
+  style={{ width: "400px" }}
+  onHide={() => setShowModal(false)}
+  className="bg-black text-white rounded-xl shadow-lg p-4"
+>
+  <div>
+    <label htmlFor="updatedName" className="block text-lg font-semibold text-center">
+      Editar nombre medición
+    </label>
+    <div className="flex justify-center">
+  <InputText
+    id="updatedName"
+    value={updatedName}
+    onChange={(e) => setUpdatedName(e.target.value)} // Cambiar el valor
+    className="p-3 mt-2 text-white bg-black border-2 border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+    placeholder="Nuevo nombre de la medición"
+    autoComplete="off" // Desactiva el autocompletado
+  />
+</div>
 
-          <div className="flex justify-center mt-6 space-x-4">
-            <Button
-              label={loading ? "Guardando..." : "Guardar Cambios"}
-              className="p-button-lg text-white bg-blue-600 hover:bg-blue-700 transition duration-200 rounded-lg p-2 m-4"
-              onClick={handleSaveEdit}
-              disabled={loading}
-            />
-            <Button
-              label="Cancelar"
-              className="p-button-lg text-white bg-gray-600 hover:bg-gray-700 transition duration-200 rounded-lg p-2 m-4"
-              onClick={() => setShowModal(false)}
-            />
-          </div>
-        </Dialog>
+
+  </div>
+
+  <div className="flex justify-center mt-6 space-x-4">
+    <Button
+      label={loading ? "Guardando..." : "Guardar Cambios"}
+      className="p-button-lg text-white bg-blue-600 hover:bg-blue-700 transition duration-200 rounded-lg p-2 m-4"
+      onClick={handleSaveEdit} // Guardar la edición
+      disabled={loading} // Deshabilitar botón mientras se guarda
+    />
+    <Button
+      label="Cancelar"
+      className="p-button-lg text-white bg-gray-600 hover:bg-gray-700 transition duration-200 rounded-lg p-2 m-4"
+      onClick={() => setShowModal(false)} // Cerrar el modal
+    />
+  </div>
+</Dialog>
+
 
         {/* Botón de regresar centrado */}
         <div className="mt-6 text-center">
           <Button
             label="Regresar"
-            className="p-button-lg text-white bg-gray-600 hover:bg-gray-700 transition duration-200 rounded-lg p-2"
+            className="p-button-lg text-white bg-gray-500 rounded-lg p-3 hover:bg-gray-600"
             onClick={handleGoBack}
           />
         </div>

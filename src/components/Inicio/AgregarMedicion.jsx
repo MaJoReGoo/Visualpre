@@ -9,10 +9,12 @@ export const AgregarMedicion = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
+  // Manejo del cambio en el input de nombre de medición
   const handleInputChange = (e) => {
     setMeasurementName(e.target.value);
   };
 
+  // Guardar la medición
   const handleSaveMeasurement = async () => {
     if (!measurementName.trim()) {
       alert("Por favor, ingresa un nombre para la medición.");
@@ -22,41 +24,27 @@ export const AgregarMedicion = () => {
     setLoading(true);
 
     try {
-      const token = localStorage.getItem("authToken");
-
-      if (!token) {
-        alert("No estás autenticado. Por favor, inicia sesión.");
-        navigate("/login");
-        return;
-      }
-
       const data = {
-        name: measurementName, // Se asume que solo se necesita el nombre para crear la medición
+        name: measurementName, // Solo el nombre de la medición
       };
 
+      // Realiza la petición para crear la medición
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/measurement-types/create`,
-        data,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`, // Usar 'token' en lugar de 'yourToken'
-          },
-        }
+        `${import.meta.env.VITE_API_URL}/types-measurements/create`, // URL de la API
+        data
       );
 
       alert("¡Medición creada con éxito!");
-      navigate("/parametrizacion");
+      navigate("/parametrizacion"); // Redirige a la página de parametrización
     } catch (error) {
-      console.error(
-        "Error al guardar la medición:",
-        error.response || error.message
-      );
+      console.error("Error al guardar la medición:", error.response || error.message);
       alert("Hubo un error al guardar la medición.");
     } finally {
       setLoading(false);
     }
   };
 
+  // Regresar a la página anterior
   const handleGoBack = () => {
     navigate(-1); // Regresa a la página anterior
   };
@@ -68,10 +56,7 @@ export const AgregarMedicion = () => {
 
         <div className="card p-4 bg-transparent shadow-xl">
           <div className="mb-4">
-            <label
-              htmlFor="measurementName"
-              className="block text-lg font-semibold"
-            >
+            <label htmlFor="measurementName" className="block text-lg font-semibold">
               Nombre de la Medición
             </label>
             <InputText
@@ -90,12 +75,12 @@ export const AgregarMedicion = () => {
               label={loading ? "Guardando..." : "Crear Medición"}
               className="p-button-lg text-white bg-black rounded-lg p-2"
               onClick={handleSaveMeasurement}
-              disabled={loading}
+              disabled={loading} // Desactiva el botón mientras está en proceso
             />
             {/* Botón de "Regresar" */}
             <Button
               label="Regresar"
-              className="p-button-lg text-white bg-gray-600 rounded-lg p-2"
+              className="p-button-lg text-white bg-gray-500 rounded-lg p-3 hover:bg-gray-600"
               onClick={handleGoBack}
             />
           </div>
@@ -104,3 +89,4 @@ export const AgregarMedicion = () => {
     </div>
   );
 };
+
