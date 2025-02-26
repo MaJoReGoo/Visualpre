@@ -3,7 +3,9 @@ import Navbar from "./Navbar";
 import { Chart } from "primereact/chart";
 import { useNavigate } from "react-router-dom";
 import axios from "axios"; // Asegúrate de importar axios
+import { io } from "socket.io-client";
 
+const socket = io("http://localhost:3000"); 
 export const Inicio = () => {
   const [selectedVisuals, setSelectedVisuals] = useState([]); // Servidores seleccionados
   const [chartData, setChartData] = useState([]); // Datos de las gráficas
@@ -12,9 +14,55 @@ export const Inicio = () => {
   const [currentIndex, setCurrentIndex] = useState(0); // Índice del servidor actual
   const [serverDetails, setServerDetails] = useState({}); // Detalles del servidor (IP, Nombre)
   const navigate = useNavigate();
+  const [metricsData, setMetricsData] = useState([]);
 
+  useEffect(() => {
+    // Lista de servidores a los que se les solicitarán métricas
+    const servers = [1, 2];
 
-  
+    // Limpiar el estado antes de emitir la solicitud
+    setMetricsData([]); // Limpia el estado de métricas antes de emitir nuevas solicitudes
+
+    // Emitir solicitud de métricas para cada servidor
+    servers.forEach((server) => {
+      socket.emit("metrics", server);
+    });
+
+    // Escuchar la respuesta de las métricas
+    const handleMetricsData = (data) => {
+      if (data) {
+        setMetricsData((prevData) => {
+          // Actualiza o agrega las métricas al estado
+          const updatedData = [...prevData];
+          const existingMetricIndex = updatedData.findIndex(
+            (metric) => metric.server.ipAddress === data.server.ipAddress
+          );
+
+          if (existingMetricIndex >= 0) {
+            // Si ya existe la métrica del servidor, la actualizamos
+            updatedData[existingMetricIndex].metrics = data.metrics;
+          } else {
+            // Si no existe la métrica del servidor, la agregamos
+            updatedData.push(data);
+          }
+
+          return updatedData;
+        });
+      }
+    };
+
+    // Escuchar el evento de métricas
+    socket.on("dataMetrics", handleMetricsData);
+
+    // Limpieza de eventos cuando el componente se desmonte
+    return () => {
+      socket.off("dataMetrics", handleMetricsData);
+    };
+  }, []); // El array vacío asegura que este effect solo se ejecute una vez al montarse el componente
+
+  useEffect(() => {
+    console.log("Datos completos recibidos:", metricsData); // Log de datos
+  }, [metricsData]);
 
   // Recuperamos los servidores seleccionados desde el localStorage
   useEffect(() => {
@@ -47,33 +95,25 @@ export const Inicio = () => {
           // Verifica si la respuesta contiene las métricas necesarias
           if (!response.data || !response.data.typeMeasurements) {
             console.error("No se encontraron métricas para el servidor", visual.id);
-            return {
-              labels: ["A", "B", "C"], // Fallback para los datos
-              datasets: [
-                {
-                  data: [Math.random() * 500, Math.random() * 100, Math.random() * 200],
-                  backgroundColor: ["#42A5F5", "#66BB6A", "#FF9800"],
-                  hoverBackgroundColor: ["#1E88E5", "#81C784", "#FFA000"],
-                },
-              ],
-            };
+            return []; // Fallback para los datos
           }
 
-          // Usamos los datos reales de la respuesta de la API
-          return {
-            labels: response.data.typeMeasurements.map((measurement) => measurement.name), // Usamos los nombres de las mediciones
+          // Dividimos las mediciones en un máximo de 3 gráficas
+          const measurements = response.data.typeMeasurements.slice(0, 3); // Tomamos solo los primeros 3 tipos de medición
+          return measurements.map((measurement) => ({
+            labels: [measurement.name],
             datasets: [
               {
-                data: response.data.typeMeasurements.map((measurement) => measurement.value || Math.random() * 100), // Usamos los valores de las mediciones o valores aleatorios
-                backgroundColor: ["#42A5F5", "#66BB6A", "#FF9800"],
-                hoverBackgroundColor: ["#1E88E5", "#81C784", "#FFA000"],
+                data: [measurement.value || Math.random() * 100], // Usamos los valores de las mediciones o valores aleatorios
+                backgroundColor: ["#42A5F5"], 
+                hoverBackgroundColor: ["#1E88E5"],
               },
             ],
-          };
+          }));
         })
       );
 
-      setChartData(fetchedData);
+      setChartData(fetchedData.flat()); // Aplanamos la matriz de datos para tener todas las gráficas en un solo array
       setChartOptions({
         cutout: "60%",
       });
@@ -112,38 +152,29 @@ export const Inicio = () => {
       );
     }
 
-    const currentServerCharts = chartData[currentIndex]?.datasets ? (
-      <div className="flex flex-col items-center w-full sm:w-1/2 md:w-1/3 lg:w-1/4 mx-auto">
+    const currentServerCharts = chartData.slice(currentIndex * 3, currentIndex * 3 + 3).map((data, idx) => (
+      <div key={idx} className="flex flex-col items-center w-full sm:w-1/2 md:w-1/3 lg:w-1/4 mx-auto">
         <h3 className="text-white mb-4 text-lg md:text-xl">
-          {`Gráficas del servidor ${selectedVisuals[currentIndex]?.name || "Desconocido"}`}
+          {`Gráficas del servidor ${serverDetails[selectedVisuals[currentIndex]?.id]?.name || "Desconocido"}`}
         </h3>
-        {/* Mostrar IP del servidor */}
         <p className="text-white text-sm mb-4">{`ipAddress: ${serverDetails[selectedVisuals[currentIndex]?.id]?.ipAddress || "No disponible"}`}</p>
-        {chartData[currentIndex].datasets.map((dataset, idx) => (
-          <Chart
-            key={idx}
-            type="doughnut"
-            data={chartData[currentIndex]}
-            options={chartOptions}
-            className={`w-full transition-opacity duration-500 ${transitioning ? "opacity-0" : "opacity-100"}`}
-          />
-        ))}
+        <Chart
+          type="doughnut"
+          data={data}
+          options={chartOptions}
+          className={`w-full transition-opacity duration-500 ${transitioning ? "opacity-0" : "opacity-100"}`}
+        />
       </div>
-    ) : (
-      <div className="text-center text-white">Cargando las gráficas...</div>
-    );
+    ));
 
     return currentServerCharts;
   };
 
-  // Intervalo para cambiar entre los servidores seleccionados
   useEffect(() => {
     const intervalId = setInterval(() => {
       setTransitioning(true);
       setTimeout(() => {
-        setCurrentIndex(
-          (prevIndex) => (prevIndex + 1) % selectedVisuals.length
-        );
+        setCurrentIndex((prevIndex) => (prevIndex + 1) % selectedVisuals.length);
         setTransitioning(false);
       }, 500); // Duración de la transición
     }, 8000); // Intervalo de cambio de servidor

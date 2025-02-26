@@ -102,6 +102,7 @@ export const Parametrizacion = () => {
     localStorage.setItem("selectedServers", JSON.stringify(selected)); // Guardar en localStorage
   };
   
+  
   const onSelectAllChange = (e) => {
     if (e.target.checked) {
       setSelectedServers(servers);

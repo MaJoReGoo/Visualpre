@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React/* , { useState, useEffect } */ from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Inicio } from "./components/Inicio/Inicio";
 import { Parametrizacion } from "./components/Inicio/Parametrizacion";
@@ -6,12 +6,12 @@ import { EditServer } from "./components/Inicio/EditServer";
 import { AgregarMedicion } from "./components/Inicio/AgregarMedicion";
 import { AgregarServidor } from "./components/Inicio/AgregarServidor";
 import { ListarMediciones } from "./components/Inicio/ListadoMedicion";
-import { io } from "socket.io-client";
+/* import { io } from "socket.io-client";
 
-const socket = io("http://localhost:3000");
+const socket = io("http://localhost:3000"); */
 
 function App() {
-  const [metricsData, setMetricsData] = useState([]);
+/*   const [metricsData, setMetricsData] = useState([]);
 
   useEffect(() => {
     // Lista de servidores a los que se les solicitarán métricas
@@ -60,12 +60,12 @@ function App() {
   useEffect(() => {
     console.log("Datos completos recibidos:", metricsData); // Log de datos
   }, [metricsData]); // Este effect se ejecuta cada vez que `metricsData` cambia
-
+ */
   return (
     <Router>
       <Routes>
         {/* Ruta raíz "/" apunta al componente Inicio */}
-        <Route path="/" element={<Inicio metricsData={metricsData} />} />
+        <Route path="/" element={<Inicio /* metricsData={metricsData} */ />} />
         <Route path="/Parametrizacion" element={<Parametrizacion />} />
         <Route path="/EditServer/:id" element={<EditServer />} />
         <Route path="/AgregarMedicion" element={<AgregarMedicion />} />
