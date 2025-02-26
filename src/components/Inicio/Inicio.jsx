@@ -5,7 +5,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios"; // Asegúrate de importar axios
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:3000"); 
+const socket = io("http://localhost:3000");
+
 export const Inicio = () => {
   const [selectedVisuals, setSelectedVisuals] = useState([]); // Servidores seleccionados
   const [chartData, setChartData] = useState([]); // Datos de las gráficas
@@ -105,7 +106,7 @@ export const Inicio = () => {
             datasets: [
               {
                 data: [measurement.value || Math.random() * 100], // Usamos los valores de las mediciones o valores aleatorios
-                backgroundColor: ["#42A5F5"], 
+                backgroundColor: ["#42A5F5"],
                 hoverBackgroundColor: ["#1E88E5"],
               },
             ],
@@ -152,12 +153,13 @@ export const Inicio = () => {
       );
     }
 
+    // Título principal con nombre e IP del servidor
+    const serverName = serverDetails[selectedVisuals[currentIndex]?.id]?.name || "Desconocido";
+    const serverIp = serverDetails[selectedVisuals[currentIndex]?.id]?.ipAddress || "No disponible";
+
+    // Renderiza las gráficas de forma horizontal
     const currentServerCharts = chartData.slice(currentIndex * 3, currentIndex * 3 + 3).map((data, idx) => (
-      <div key={idx} className="flex flex-col items-center w-full sm:w-1/2 md:w-1/3 lg:w-1/4 mx-auto">
-        <h3 className="text-white mb-4 text-lg md:text-xl">
-          {`Gráficas del servidor ${serverDetails[selectedVisuals[currentIndex]?.id]?.name || "Desconocido"}`}
-        </h3>
-        <p className="text-white text-sm mb-4">{`ipAddress: ${serverDetails[selectedVisuals[currentIndex]?.id]?.ipAddress || "No disponible"}`}</p>
+      <div key={idx} className="flex flex-col items-center w-full sm:w-1/3 md:w-1/4 lg:w-1/4 mx-2 my-4">
         <Chart
           type="doughnut"
           data={data}
@@ -167,7 +169,22 @@ export const Inicio = () => {
       </div>
     ));
 
-    return currentServerCharts;
+    return (
+      <div className="flex flex-col items-center">
+        {/* Título principal del servidor */}
+        <h3 className="text-white mb-4 text-lg md:text-xl">
+          {`Gráficas del servidor ${serverName}`}
+        </h3>
+        <p className="text-white text-sm mb-6">
+          {`IP: ${serverIp}`}
+        </p>
+
+        {/* Gráficas del servidor */}
+        <div className="flex flex-wrap justify-center gap-4 w-full max-w-7xl">
+          {currentServerCharts}
+        </div>
+      </div>
+    );
   };
 
   useEffect(() => {
