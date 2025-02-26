@@ -13,6 +13,9 @@ export const Inicio = () => {
   const [serverDetails, setServerDetails] = useState({}); // Detalles del servidor (IP, Nombre)
   const navigate = useNavigate();
 
+
+  
+
   // Recuperamos los servidores seleccionados desde el localStorage
   useEffect(() => {
     const savedSelectedVisuals = localStorage.getItem("selectedServers");
