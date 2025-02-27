@@ -62,8 +62,54 @@ export const Inicio = () => {
   }, []); // El array vacío asegura que este effect solo se ejecute una vez al montarse el componente
 
   useEffect(() => {
-    console.log("Datos completos recibidos:", metricsData); // Log de datos
-  }, [metricsData]);
+    console.log(metricsData.length);
+
+    if (metricsData && metricsData[0] && metricsData[0].metrics && metricsData[0].metrics[0]) {
+        const metricsValues = metricsData.map((data) => {
+            if (data.metrics && data.metrics[0]) {
+
+                // Accede directamente al primer 'metrics' y luego al 'name' y 'value'
+                const typeMeasurement = data.metrics[0].metrics;
+                
+
+                typeMeasurement.forEach(element => {
+                  console.log(element,'element');
+                  element.metrics.forEach(element1 => {
+                    console.log(element1,'element1');
+                    if (element1.name === "Tiempo del sistema") {
+                      element1.data = element1.data / 100;
+                    }
+                  })
+                });
+                
+                
+
+                // console.log('Metric Name: ', firstMetric.name);  // Aquí obtienes el 'name'
+                // console.log('Metric Value: ', firstMetric.value); // Aquí obtienes el 'value'
+
+                // // Realizas la operación con 'value' (por ejemplo, dividiendo entre 100)
+                // const modifiedValue = firstMetric.value / 100; // Operación que deseas realizar
+
+                // // Aquí puedes actualizar 'tiempo_sistema' con el valor modificado
+                // if (firstMetric.name === "Estado del equipo") {
+                //     data.metrics[0].metrics.forEach(element1 => {
+                //         if (element1.name === "Tiempo del sistema") {
+                //           element1.data = modifiedValue; // Aquí se asigna el valor modificado
+                //         }
+                //     });
+                // }
+
+                return data; // Devolverá el valor de las métricas con la operación aplicada
+            } else {
+                return 'No metrics found';
+            }
+        });
+
+        console.log(metricsValues); // Aquí verás el array de métricas o los valores alternativos
+    }
+}, [metricsData]);
+
+  
 
   // Recuperamos los servidores seleccionados desde el localStorage
   useEffect(() => {
@@ -136,53 +182,56 @@ export const Inicio = () => {
       );
     }
 
-    if (!chartData[currentIndex]) {
-      return (
-        <div className="text-center text-white">
-          Cargando las gráficas para el servidor {selectedVisuals[currentIndex]?.name || "Desconocido"}...
-        </div>
-      );
-    }
+  
 
-    // Si no se encontraron métricas
-    if (!chartData[currentIndex].datasets) {
-      return (
-        <div className="text-center text-white">
-          No se encontraron métricas para el servidor {selectedVisuals[currentIndex]?.name || "Desconocido"}.
-        </div>
-      );
-    }
+    // if (!chartData[currentIndex]) {
+    //   return (
+    //     <div className="text-center text-white">
+    //       Cargando las gráficas para el servidor {selectedVisuals[currentIndex]?.name || "Desconocido"}...
+    //     </div>
+    //   );
+    // }
+
+    // // Si no se encontraron métricas
+    // if (!chartData[currentIndex].datasets) {
+    //   return (
+    //     <div className="text-center text-white">
+    //       No se encontraron métricas para el servidor {selectedVisuals[currentIndex]?.name || "Desconocido"}.
+    //     </div>
+    //   );
+    // }
 
     // Título principal con nombre e IP del servidor
-    const serverName = serverDetails[selectedVisuals[currentIndex]?.id]?.name || "Desconocido";
-    const serverIp = serverDetails[selectedVisuals[currentIndex]?.id]?.ipAddress || "No disponible";
+    // const serverName = serverDetails[selectedVisuals[currentIndex]?.id]?.name || "Desconocido";
+    // const serverIp = serverDetails[selectedVisuals[currentIndex]?.id]?.ipAddress || "No disponible";
 
-    // Renderiza las gráficas de forma horizontal
-    const currentServerCharts = chartData.slice(currentIndex * 3, currentIndex * 3 + 3).map((data, idx) => (
-      <div key={idx} className="flex flex-col items-center w-full sm:w-1/3 md:w-1/4 lg:w-1/4 mx-2 my-4">
-        <Chart
-          type="doughnut"
-          data={data}
-          options={chartOptions}
-          className={`w-full transition-opacity duration-500 ${transitioning ? "opacity-0" : "opacity-100"}`}
-        />
-      </div>
-    ));
+    // // Renderiza las gráficas de forma horizontal
+    // const currentServerCharts = chartData.slice(currentIndex * 3, currentIndex * 3 + 3).map((data, idx) => (
+    //   <div key={idx} className="flex flex-col items-center w-full sm:w-1/3 md:w-1/4 lg:w-1/4 mx-2 my-4">
+    //     <Chart
+    //       type="doughnut"
+    //       data={data}
+    //       options={chartOptions}
+    //       className={`w-full transition-opacity duration-500 ${transitioning ? "opacity-0" : "opacity-100"}`}
+    //     />
+    //   </div>
+    // ));
 
     return (
       <div className="flex flex-col items-center">
-        {/* Título principal del servidor */}
-        <h3 className="text-white mb-4 text-lg md:text-xl">
+  
+        {/* <h3 className="text-white mb-4 text-lg md:text-xl">
           {`Gráficas del servidor ${serverName}`}
         </h3>
         <p className="text-white text-sm mb-6">
           {`IP: ${serverIp}`}
         </p>
 
-        {/* Gráficas del servidor */}
         <div className="flex flex-wrap justify-center gap-4 w-full max-w-7xl">
           {currentServerCharts}
-        </div>
+        </div> */}
+
+        
       </div>
     );
   };

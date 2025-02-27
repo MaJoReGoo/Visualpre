@@ -33,18 +33,18 @@ export const EditServer = () => {
           `${import.meta.env.VITE_API_URL}/servers/${id}`
         );
         const server = response.data;
-
-        const estadoValor = server.estado === "activo" ? true : false;
-
+  
+        const estadoValor = server.estado === "activo" ? true : server.estado === "inactivo" ? false : true; // Asegurarse de que si no tiene valor se ponga 'true'
+  
         setServerData({
           name: server.name || "",
           ipAddress: server.ipAddress || "",
           typeMeasurements: server.typeMeasurements
             ? server.typeMeasurements.map((m) => m.id)
             : [],
-          estado: estadoValor,
+          estado: estadoValor, // Esto asegura que el valor de estado es 'activo' por defecto
         });
-
+  
         const measurementTypesResponse = await axios.get(
           `${import.meta.env.VITE_API_URL}/types-measurements`
         );
@@ -56,9 +56,10 @@ export const EditServer = () => {
         setLoading(false);
       }
     };
-
+  
     fetchData();
   }, [id]);
+  
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
